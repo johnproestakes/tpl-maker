@@ -1,0 +1,36 @@
+@charset "utf-8";
+/* CSS Document */
+
+body, html{margin:0; font-family:arial;overflow:hidden;}
+.file-dropper {box-sizing: border-box;}
+h2 {margin:0; padding-top: 10px;}
+#fileList {list-style:none;padding:0; margin: 1em 0;}
+#fileList li {padding:.5em 0; border-bottom: solid 1px #ccc; margin:0;}
+#fileList li a {padding-left:.5em;}
+.clearfix {clear:both;}
+.file-dropper {height: 100px; margin: 1em 10px; border: dashed 1px #333; background: #fafafa; line-height:100px; text-align:center; font-style: italic}
+body, html, #container, #main, #sidebar {height: 100%;}
+nav {overflow:hidden; background: #ccc;}
+.danger{font-size: 15px; color: red;}
+nav .brand {width: 200px; line-height: 52px;height: 52px; background-color: #333; color: #fff; text-align: center; font-size: 22px;}
+nav a {padding: 1em .75em; display:block; text-decoration:none; color: #000;}
+nav a.active{font-weight:bold; position:relative;}
+
+@media(min-width:760px){
+nav a.active:after {content:' '; border-style: solid solid solid solid; border-width: 7px; border-color: transparent transparent #fff transparent; position:absolute; bottom:-3px; left: 50%; -moz-transform: translateX(-50%); }
+}
+ul.inline li {float:left;}
+ul.unstyled {padding:0; margin:0; list-style:none;}
+ul.unstyled li {margin:0; paddding:0;}
+#content, #main, #final, #sidebar, #help {height: 100%; box-sizing:border-box}
+#main {width: 100%;}
+.textarea {width: 100%;-moz-appearance:none; box-sizing: border-box; height: 70%; border: solid 1px #333;}
+#sidebar {box-sizing: border-box; padding: 1em; overflow-y:scroll;}
+label {display:block; padding-top: .5em;}
+#fields {padding-bottom: 2em;}
+#fields input {width: 100%;}
+label {display:block; padding:1em 0 .5em 0;}
+.wrapper {margin:0 10px; height:100%;}
+.updated {-moz-transition: all 100ms linear; color: magenta;}
+.pill {background: #333; color: #fff; border-radius: 10px; display:inline-block; font-size: .7em; padding: 2px 10px;}
+button {-moz-appearance:none; background: orange; color: #fff; border:none; padding: .5em .75em; font-family:Arial; font-size: 14px;}
