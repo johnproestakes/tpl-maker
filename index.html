@@ -32,18 +32,18 @@
       <div style="height: 60px;"></div>
       <div class="ui container">
       <div class="ui fluid ordered steps">
-        <div class="step" ng-click="navigateTo('/#main')" ng-class="{completed: templateList.length>0}">
+        <div class="step" ng-click="navigateTo('#/main')" ng-class="{completed: templateList.length>0}">
           <div class="content">
             <div class="title">Templates <span class="ui label" ng-if="templateList.length>0">{{templateList.length}}</span></div>
             </div>
           </div>
-        <div class="step" ng-click="templateLoaded()&&navigateTo('/#fields')" ng-class="{completed:areAllFieldsCompleted()}">
+        <div class="step" ng-click="templateLoaded()&&navigateTo('#/fields')" ng-class="{completed:areAllFieldsCompleted()}">
           <div class="content">
             <div class="title">Fields
               <span class="ui label" ng-if="fields.length>0">{{fields.length}}</span></div>
             </div>
           </div>
-        <div class="step" ng-click="areAllFieldsCompleted()&&navigateTo('/#export')">
+        <div class="step" ng-click="areAllFieldsCompleted()&&navigateTo('#/export')">
           <div class="content">
             <div class="title">Export</div>
             </div>
