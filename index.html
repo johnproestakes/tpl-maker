@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Template Maker</title>
+<!-- css -->
+<link href="scripts/css/styles.css" rel="stylesheet" type="text/css"/>
+<link href="scripts/css/libs/semantic.min.css" rel="stylesheet" type="text/css"/>
+
+<!-- libraries -->
+<script type="text/javascript" src="scripts/js/custom.js"></script>
+<script type="text/javascript" src="scripts/js/libs/jquery.min.js"></script>
+<script type="text/javascript" src="scripts/js/libs/angular.min.js"></script>
+<script type="text/javascript" src="scripts/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="scripts/js/libs/semantic.min.js"></script>
+
+<script type="text/javascript" src="prod/app/app.js"></script>
+<script type="text/javascript" src="prod/app/controllers.js"></script>
+<script type="text/javascript" src="prod/app/directives.js"></script>
+<script type="text/javascript" src="prod/app/routes.js"></script>
+
+
+</head>
+
+<body>
+  <div ng-app="templateMaker" ng-controller="MainController">
+    <div class="ui fixed top menu">
+      <div class="ui container">
+        <div class="item">Template Maker</div>
+        <a href="#/help" class="item">Help?</a>
+        </div>
+      </div>
+      <div style="height: 60px;"></div>
+      <div class="ui container">
+      <div class="ui fluid ordered steps">
+        <div class="step" ng-click="navigateTo('/#main')" ng-class="{completed: templateList.length>0}">
+          <div class="content">
+            <div class="title">Templates <span class="ui label" ng-if="templateList.length>0">{{templateList.length}}</span></div>
+            </div>
+          </div>
+        <div class="step" ng-click="templateLoaded()&&navigateTo('/#fields')" ng-class="{completed:areAllFieldsCompleted()}">
+          <div class="content">
+            <div class="title">Fields
+              <span class="ui label" ng-if="fields.length>0">{{fields.length}}</span></div>
+            </div>
+          </div>
+        <div class="step" ng-click="areAllFieldsCompleted()&&navigateTo('/#export')">
+          <div class="content">
+            <div class="title">Export</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <br>
+    <section class="ui container" ng-view></section>
+    </div>
+</body>
+</html>

@@ -1,0 +1,14 @@
+
+Invite 1
+
+<p>Topic: {{ webinar_topic }}<br>
+Date: {{ webinar | date }}<br>
+Duration: {{ webinar_duration | placeholder: "e.g. 90 mins"}}<br>
+
+</p>
+
+<p><a href="{{webinar_room_direct_url}}">Attend webinar</a></p>
+
+<p>Having problems?<br>
+<a href="{{webinar_room_tracked_url}}">click here</a>
+</p>

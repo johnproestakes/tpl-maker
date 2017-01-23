@@ -1,0 +1,26 @@
+{
+  "name": "tpl-maker",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/johnproestakes/tpl-maker.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/johnproestakes/tpl-maker/issues"
+  },
+  "devDependencies": {
+    "gulp-htmlmin": "^3.0.0",
+    "gulp-typescript": "~2.13.4",
+    "gulp-concat": "~2.6.0",
+    "gulp": "~3.9.1",
+    "gulp-connect": "~4.0.0"
+  },
+  "homepage": "https://github.com/johnproestakes/tpl-maker#readme"
+}
