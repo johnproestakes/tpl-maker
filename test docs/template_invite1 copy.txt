@@ -1,0 +1,29 @@
+
+Invite 1
+
+<p>
+<strong>Topic:</strong> {{ webinar_topic | length: 48 }}<br>
+<strong>Date:</strong> {{ webinar_date | date: "longDate" }}<br>
+<strong>Time:</strong> {{ webinar_time }}<br>
+<strong>Duration:</strong> {{ webinar_duration }}<br>
+</p>
+
+
+{{ webinar_date | date: "longDate" }}<br>
+{{ webinar_date | date: "mediumDate" }}<br>
+{{ webinar_intro | textarea }}
+{{ webinar_speakers | repeat: `
+  <div>
+    <h1 style="color:#ccc;">## name | length: 128 ##</h1>
+    <h2>## title | length: 128 ##</h2>
+    ## date| date: "longDate" ##
+    <p>## description | length:128 ##</p>
+    </div>
+` }}
+
+
+<p><a href="{{webinar_room_direct_url | url }}">Attend webinar</a></p>
+
+<p>Having problems?<br>
+<a href="{{webinar_room_tracked_url | url }}">click here</a>
+</p>

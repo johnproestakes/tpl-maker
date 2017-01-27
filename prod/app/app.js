@@ -1,4 +1,4 @@
-angular.module("templateMaker",['ngRoute']);
+angular.module("templateMaker",['ngRoute','JupiterDragDrop']);
 
 angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', function(TemplateFactory,saveAs){
   var self = this;
@@ -57,8 +57,12 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			reader.readAsBinaryString(file);
 		};
 	this.exportFields = function(fields){
-		var data = JSON.stringify(fields);
-		saveAs(new Blob([data], {type:"application/json;charset=utf-8"}), "export_fields.json");
+		//var data = JSON.stringify(fields);
+    var output = {};
+    for (var n=0; n<fields.length; n++){
+      output[fields[n].name] = fields[n].value;
+    }
+		saveAs(new Blob([JSON.stringify(output)], {type:"application/json;charset=utf-8"}), "export_fields.json");
 
 		};
 	this.exportAll = function(files, $scope){
@@ -76,18 +80,113 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 angular.module("templateMaker")
 .factory("$Fields", function $Fields(){
   var self = this;
+  this.fieldTypes = ["date","textarea","repeat"];
+  this.fieldAttr = {"length":"="};
+  this.foundFields = [];
+  this.foundFieldsProcessed = {};
+  //this.fieldPattern = /\#([0-9a-zA-Z\{\}\;\_]+[\:\t\e\x\t\a\r\e\a]?[\:\d\a\t\e]?)+\#/gi;
+  this.fieldPattern = /{{((\n|.)*?)}}/gi;
 
-  this.fieldPattern = /\#([0-9a-zA-Z\{\}\;\_]+[\:\t\e\x\t\a\r\e\a]?[\:\d\a\t\e]?)+\#/gi;
-
-  this.extractFields = function(str){
-    var vars = [];
+  this.extractFields = function(str, origin){
     var result = str.match(self.fieldPattern);
     if (result && result.length > 0) {
+      console.log("extracting fields",result.getUnique());
       $.each(result.getUnique(), function(key,value){
-        vars.push(value);
+        if(origin.indexOf(value) == -1){
+          origin.push(value);
+        }
         });
       }
-    return vars;
+    return origin;
+  };
+
+  this.extractRepeatingField = function(raw){
+    var content = raw.match(/`((\n|.*)*)\`/igm);
+
+    var output = {};
+    output.fields = [];
+    if(content.length>0){
+      output.content = content[0].substr(1,content[0].length-2);
+      //find fields in the repeat string
+      var fields = output.content.match(/\#\#(.*?)\#\#/g);
+      var fieldObjs = [];
+      if(fields.length>0){
+        for(var i=0; i<fields.length; i++){
+          var f = self.getFieldFromRaw(fields[i].replace(/\#\#/g,""), false);
+          f.data_replace = [fields[i], f.hasOwnProperty("format") ? {format: f.format} : {}];
+          output.fields.push(f);
+        }
+
+      }
+    }
+
+    return output;
+  };
+  this.getFieldFromRaw = function(raw, loadLocal){
+    if(loadLocal === null) loadLocal = true;
+
+    var field = { model:"", value:"", type:"text" };
+    field.name = ((raw.replace(/{{/g, "")).replace(/}}/g, "")).trim();
+
+    if(field.name.indexOf("|")>-1){
+      var sections = field.name.split("|");
+      field.name = sections.shift().trim();
+      //console.log(sections[0]);
+      if(sections[0].trim().substr(0,6)=="repeat"){
+        console.log(raw);
+        field.model = [];
+        field.type="repeat";
+        // field.content = ;
+        var a = self.extractRepeatingField(raw);
+        field.content = a.content;
+        field.fields = a.fields;
+      } else {
+        sections.forEach(function(section){
+          section = section.trim();
+          if(section.indexOf(":")>-1){
+            section = section.split(":");
+            for (var i = 0; i<section.length; i++){
+              section[i] = (section[i].replace(/"/g, "")).trim();
+            }
+
+            if(self.fieldTypes.indexOf(section[0])>-1){
+              field.type = section[0];
+              field.format = section[1];
+            } else {
+              for(var e in self.fieldAttr){
+                if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
+                  if(self.fieldAttr[e]=="="){
+                    field[section[0]] = section[1]*1;
+                  } else {
+                    field[section[0]] = section[1];
+                  }
+
+                }
+              }
+
+            }
+          } else {
+            if(self.fieldTypes.indexOf(section)>-1){
+              field.type = section;
+            }
+          }
+        });
+      }
+
+    }
+    field.clean = field.name;
+
+    if(loadLocal && localStorage.getItem(field.name)){
+      if(field.type=="repeat"){
+        field.model = localStorage.getItem(field.name) ? JSON.parse(localStorage.getItem(field.name)) : []
+      } else {
+        field.value = localStorage.getItem(field.name) ? unescape(localStorage.getItem(field.name)) : "";
+        field.value = field.value.replace(/\/\/Q/g, '\"');
+        field.model = field.value;
+      }
+
+    }
+    return field;
   };
 
   this.areAllFieldsCompleted = function($scope){
@@ -105,35 +204,32 @@ angular.module("templateMaker")
 
     return output;
   };
+
   this.processFields = function(fields){
     var output = [];
-	  fields.sort();
-    var items = fields.getUnique();
+	  // fields.sort();
 
-    for(var i in items){
-      if(fields.hasOwnProperty(i)){
-        var item = {
-          "name": items[i],
-          "model": "",
-          "type": "text"
-        };
+    self.foundFields = fields.getUnique();
+    //process found fields
 
-        ["textarea","date"].forEach(function(type){
-          if(item.name.indexOf(":"+type)>-1){
-            item.type = type;
-          }
-        });
+    self.foundFields.forEach(function(raw){
+      var field = self.getFieldFromRaw(raw, true);
 
-				item['data_replace'] = items[i].toLowerCase();
-        item.clean = item.name.replace(/\#/g, "").trim();
-        if(localStorage.getItem(items[i])){
-          item.value = localStorage.getItem(items[i]) ? unescape(localStorage.getItem(items[i])) : "";
-          item.value = item.value.replace(/\/\/Q/g, '\"');
-          item.model = item.value;
-        }
+      if(!self.foundFieldsProcessed.hasOwnProperty(field.name)){
+        self.foundFieldsProcessed[field.name] = field;
+      }
+      if(!self.foundFieldsProcessed[field.name].hasOwnProperty('data_replace')){
+        self.foundFieldsProcessed[field.name]['data_replace'] = [];
+      }
+      self.foundFieldsProcessed[field.name].data_replace.push([raw, field.hasOwnProperty("format") ? {format: field.format} : {}]);
 
+    });
+    console.log(self.foundFieldsProcessed);
 
-			  output.push(item);
+    for(var i in self.foundFieldsProcessed){
+      //console.log(items[i]);
+      if(self.foundFieldsProcessed.hasOwnProperty(i)){
+        output.push(self.foundFieldsProcessed[i]);
         }
       }
 		return output;
@@ -153,7 +249,7 @@ angular.module('templateMaker').factory(
 );
 
 angular.module("templateMaker")
-.factory('TemplateFactory',["saveAs","$Fields", function(saveAs, $Fields){
+.factory('TemplateFactory',["saveAs","$Fields","$filter", function(saveAs, $Fields,$filter){
 	var TemplateFactory = this;
 
   this.binaryFiles = [];
@@ -162,11 +258,10 @@ angular.module("templateMaker")
 	this.readFile = function(files, i, $scope){
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
-				//TemplateFactory.updateFields(evt.target.result);
 
 				var binary = evt.target.result;
 				TemplateFactory.binaryFiles.push(binary);
-        TemplateFactory.fields = $Fields.extractFields(binary);
+        TemplateFactory.fields = $Fields.extractFields(binary, TemplateFactory.fields);
 				if(i < files.length-1){
 					TemplateFactory.readFile(files,i+1, $scope);
 					} else {
@@ -182,7 +277,7 @@ angular.module("templateMaker")
 		var a = [];
 		TemplateFactory.fields =[];
 		TemplateFactory.binaryFiles =[];
-			return TemplateFactory.readFile(files, 0, $scope);
+		return TemplateFactory.readFile(files, 0, $scope);
 		};
 	this.importFieldValues = function(text){
 		var data = JSON.parse(text);
@@ -194,14 +289,78 @@ angular.module("templateMaker")
 	this.updateFields = function(){
 
 		};
+	this.generateDateFromField = function(field, value, dataReplace){
+		var date = value.split("-");
+		var date_js = new Date(date[0], date[1], date[2]);
+		return $filter('date')(date_js, dataReplace.format);
+	};
+
 	this.generateTemplate = function(preview, fields){
 		var output = preview;
-		jQuery.each(fields, function(key, value){
-			var str = new RegExp(value.data_replace, "g");
-			output = output.replace(str, value.value);
-			});
+
+			for(var f in fields){
+				if(fields.hasOwnProperty(f)){
+					if(fields[f].data_replace.length>0){
+						for(var i=0; i < fields[f]['data_replace'].length; i++){
+
+							var str = new RegExp(fields[f].data_replace[i][0].replace(/\|/g,"\\|"), "g");
+
+							if(fields[f].type=="repeat"){
+								//console.log("%cWe found a repeat field "+fields[f].name, "background:yellow");
+								console.log("FIELD",fields[f]);
+								var content = [];
+								for(row = 0; row<fields[f].model.length; row++){
+									content.push(fields[f].content);
+									for(var n = 0; n< fields[f].fields.length; n++){
+										console.log(n);
+										// if(fields[f].model[row].hasOwnProperty(n)){
+											console.log(fields[f].fields[n]);
+
+												if(fields[f].fields[n].type=="date"){
+													console.log('is date')
+													var date = TemplateFactory.generateDateFromField(
+														fields[f].fields[n],
+														fields[f].model[row][fields[f].fields[n].name],
+														fields[f].fields[n].data_replace[0][1] == {} ? "longDate" : fields[f].fields[n].data_replace[0][1]);
+													console.log(fields[f].fields[n].data_replace[0].replace(/\|/g,"\\|").replace(/\#/g,"\\\#"));
+													content[row] = content[row].replace(
+														new RegExp(fields[f].fields[n].data_replace[0].replace(/\|/g,"\\|").replace(/\#/g,"\\\#"),"g"), date);
+
+												} else {
+													console.log(fields[f].fields[n].data_replace[0].replace(/\|/g,"\\|").replace(/\#/g,"\\\#"));
+													content[row] = content[row].replace(
+														new RegExp(fields[f].fields[n].data_replace[0].replace(/\|/g,"\\|").replace(/\#/g,"\\\#"),"g"), fields[f].model[row][fields[f].fields[n].name]);
+												}
+
+
+											//fields[f].model[n];
+										// }
+									} //inner loop
+
+
+								} //outerloop
+								console.log(content);
+
+								output = output.replace(str, content.join(""));
+								// fields[f].content this is where the pattern is.
+								// fields[f].model //values need to merge with the fields.
+
+
+							} else if(fields[f].type=="date") {
+								var date = TemplateFactory.generateDateFromField(fields[f], fields[f].value, fields[f].data_replace[i][1]);
+								output = output.replace(str, date);
+							} else {
+								output = output.replace(str, fields[f].value);
+							}
+
+						}
+					}
+				}
+			}
+
 			return output;
 		};
+
 
   return TemplateFactory;
 	}]);

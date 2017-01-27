@@ -1,12 +1,21 @@
 
 Invite 1
 
+
+<!--\s#tplMaker_meta([\w\:\s\w\;\n\r]*)-->
+<!-- #tplMaker_meta
+webinar_date: date;
+webinar_time: time;
+webinar_audience_url: url;
+-->
+
+
 <p>Topic: {{ webinar_topic }}<br>
-Date: {{ webinar | date }}<br>
-Duration: {{ webinar_duration | placeholder: "e.g. 90 mins"}}<br>
-
+Date: {{ webinar | date: "mDY" }}<br>
+Duration: {{ webinar_duration | url}}<br>
+{{ webinar | date }}
 </p>
-
+{{ webinar_outro | textarea }}
 <p><a href="{{webinar_room_direct_url}}">Attend webinar</a></p>
 
 <p>Having problems?<br>

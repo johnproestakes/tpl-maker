@@ -7,6 +7,7 @@ function($scope, TemplateFactory, $Export,$Fields){
     $scope.fields = [];
     $scope.exported = [];
     $scope.currentView = 1;
+    location.href="#/main";
   };
 
   var debounce = null;
@@ -22,6 +23,7 @@ function($scope, TemplateFactory, $Export,$Fields){
 
   }
 
+  $scope.isLoading = false;
   $scope.navigateTo = function(n){
     location.href=n;
   }
@@ -30,6 +32,7 @@ function($scope, TemplateFactory, $Export,$Fields){
     return $Fields.areAllFieldsCompleted($scope);
   };
   $scope.dropTemplateFiles = function(evt){
+    $scope.isLoading = true;
 	  var files = evt.dataTransfer.files; // FileList object.
 	  $scope.templateList=files;
     var reader = new FileReader();
@@ -38,10 +41,41 @@ function($scope, TemplateFactory, $Export,$Fields){
       $scope.preview = dropText;
 			$scope.exported=[];
 			$scope.getFieldList();
+
       setTimeout(function(){
         $scope.navigateTo('#/fields');
+        $scope.isLoading = false;
+      }, 500);
 
-      }, 1000);
+	  };
+		reader.readAsBinaryString(files[0]);
+	};
+
+  $scope.dropImportFieldValues = function(evt){
+    $scope.isLoading = true;
+	  var files = evt.dataTransfer.files; // FileList object.
+	  $scope.templateList=files;
+    var reader = new FileReader();
+	  reader.onloadend = function(evt){
+		  var droppedFields = JSON.parse(evt.target.result);
+      $scope.$apply(function(){
+        for(var i in droppedFields){
+          if(droppedFields.hasOwnProperty(i)){
+            for(n=0;n<$scope.fields.length;n++){
+              if($scope.fields[n].name==i){
+                console.log(droppedFields[i]);
+                $scope.fields[n].model = droppedFields[i];
+                $scope.fields[n].value = droppedFields[i];
+              }
+            }
+          }
+        }
+      });
+      setTimeout(function(){
+        $scope.$apply(function(){
+          $scope.isLoading = false;
+        });
+      }, 300);
 
 	  };
 		reader.readAsBinaryString(files[0]);

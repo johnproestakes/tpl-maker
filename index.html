@@ -2,8 +2,13 @@
 <html>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Template Maker</title>
+
+<link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+<link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+<link rel="icon" type="image/png" href="assets/logo.png" />
 <!-- css -->
 <link href="scripts/css/styles.css" rel="stylesheet" type="text/css"/>
+<link href="scripts/css/main.css" rel="stylesheet" type="text/css"/>
 <link href="scripts/css/libs/semantic.min.css" rel="stylesheet" type="text/css"/>
 
 <!-- libraries -->
@@ -11,6 +16,7 @@
 <script type="text/javascript" src="scripts/js/libs/jquery.min.js"></script>
 <script type="text/javascript" src="scripts/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="scripts/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="scripts/js/jupiter-drag-drop.js"></script>
 <script type="text/javascript" src="scripts/js/libs/semantic.min.js"></script>
 
 <script type="text/javascript" src="prod/app/app.js"></script>
@@ -23,33 +29,17 @@
 
 <body>
   <div ng-app="templateMaker" ng-controller="MainController">
-    <div class="ui fixed top menu">
+    <div class="ui fixed inverted top menu">
       <div class="ui container">
-        <div class="item">Template Maker</div>
-        <a href="#/help" class="item">Help?</a>
-        </div>
-      </div>
-      <div style="height: 60px;"></div>
-      <div class="ui container">
-      <div class="ui fluid ordered steps">
-        <div class="step" ng-click="navigateTo('#/main')" ng-class="{completed: templateList.length>0}">
-          <div class="content">
-            <div class="title">Templates <span class="ui label" ng-if="templateList.length>0">{{templateList.length}}</span></div>
-            </div>
-          </div>
-        <div class="step" ng-click="templateLoaded()&&navigateTo('#/fields')" ng-class="{completed:areAllFieldsCompleted()}">
-          <div class="content">
-            <div class="title">Fields
-              <span class="ui label" ng-if="fields.length>0">{{fields.length}}</span></div>
-            </div>
-          </div>
-        <div class="step" ng-click="areAllFieldsCompleted()&&navigateTo('#/export')">
-          <div class="content">
-            <div class="title">Export</div>
-            </div>
+        <div class="item"><img src="assets/logo.png"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
+        <a href="javascript:angular.noop()" ng-click="blankSlate()" class="item">New Workspace</a>
+        <div class="right menu">
+          <a href="#/help" class="item">Help?</a>
           </div>
         </div>
       </div>
+      <div style="height: 50px;"></div>
+
       <br>
     <section class="ui container" ng-view></section>
     </div>

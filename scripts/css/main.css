@@ -1,0 +1,45 @@
+.file-dropper {
+  border: dashed 3px #ccc;
+  color: #ccc;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  margin-top: 1em;
+  box-sizing: content-box; }
+  .file-dropper.dragOver {
+    border: solid 3px #701a32;
+    color: #701a32;
+    background-color: rgba(112, 26, 50, 0.5); }
+
+jupiter-draggable,
+.draggable {
+  display: block;
+  position: relative;
+  margin-bottom: 1em;
+  position: relative;
+  padding-left: 2em; }
+
+.close.link {
+  position: absolute;
+  left: -1px;
+  bottom: .5em;
+  color: #701a32; }
+  .close.link:hover {
+    color: #d64d73;
+    cursor: pointer; }
+
+.drag-handle {
+  position: absolute;
+  bottom: 2.25em;
+  left: 0;
+  top: 0;
+  background: #eee;
+  width: 1em; }
+  .drag-handle:hover {
+    background-color: #701a32; }
+
+.repeat {
+  margin-bottom: 1em;
+  border-bottom: solid 1px #eee;
+  padding-bottom: 1.5em;
+  margin-bottom: 1.5em; }

@@ -1,12 +1,17 @@
 var gulp = require('gulp'),
   connect = require('gulp-connect'),
   concat = require('gulp-concat'),
-  ts = require('gulp-typescript');
+  ts = require('gulp-typescript'),
+  sass = require('gulp-sass');
 
 var myApps = ["app"];
 
 
-
+gulp.task('sass', function(){
+  gulp.src('scripts/sass/main.scss')
+  .pipe(sass())
+  .pipe(gulp.dest('scripts/css'));
+});
 
 gulp.task('ts', function(){
   myApps.forEach(function(app){
@@ -37,6 +42,7 @@ gulp.task('ts', function(){
 gulp.task('watch', function(){
   connect.server();
   myApps.forEach(function(app){
+    gulp.watch('scripts/sass/**/*.scss', ['sass']);
     gulp.watch('dev/'+app+'/*.ts', ['ts']);
     gulp.watch(['dev/'+app+'/*.js','dev/'+app+'/**/*.js'], ['ts']);
   });
