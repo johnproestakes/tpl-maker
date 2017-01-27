@@ -1,14 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head></head>
+<body>
+Invite 1
 
-<!-- $variables
-webinar_date: call
-
- -->
-
-Invite 2<br>
-
-#webinar_date:textarea#<br><br><br>
-
-
-#webinar_time:date#
-
-#webinar_speaker:date#
+<ul tpl-if="webinar_agenda_bullets">
+{{ webinar_agenda_bullets | repeat: `
+  <li>## bullet_text | length: 128 ##</li>
+` }}</ul>
+</body>
+</html>

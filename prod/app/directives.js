@@ -13,10 +13,10 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
         "<tr ><th colspan=\"7\">",
         "<span class=\"next link\" ng-click=\"advanceMonth(1)\"><i class=\"right chevron icon\"></i></span>",
         "<span class=\"prev link\" ng-click=\"advanceMonth(-1)\"><i class=\"left chevron icon\"></i></span>",
-        "<span class=\"link\">{{year}} {{nice_month}}</span> </th></tr>",
+        "<span class=\"link\">{{nice_month}} {{year}}</span> </th></tr>",
         "<tr><th>S</th><th>M</th><th>T</th><th>W</th><th>R</th><th>F</th><th>S</th></tr></thead>",
       "<tr ng-repeat=\"week in weeks\">",
-        "<td class=\"link\" ng-click=\"setDate(n)\" ng-repeat=\"n in week track by $index\">{{n}}</td>",
+        "<td class=\"link\" ng-click=\"setDate(n)\" ng-class=\"{nextMonth: n[0]!==month }\" ng-repeat=\"n in week track by $index\">{{n[1]}}</td>",
       "</tr></table>",
       "</div>"
     ].join(""),
@@ -30,36 +30,43 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
 
       var months = ["January","February","March", "April", "May", "June","July","August","September","October","November","December"];
       scope.nice_month = months[scope.month];
-      scope.day_max = new Date(scope.year, scope.month).getDate();
+      scope.day_max = new Date(scope.year, (scope.month+1), 0).getDate();
       // scope.$apply();
 
       scope.getDates = function(){
         var startDate = new Date(scope.year, scope.month, 1).getDay();
-        var endDate = new Date(scope.year, scope.month,0).getDate();
+        var endDate = new Date(scope.year, scope.month+1, 0).getDate();
         var weeks = [[]];
         var pointer = 0;
         var day = 1;
         //first week
-        for(var i=0; i<startDate; i++){
-          weeks[pointer].push("");
+
+        var prevMonthEnds = new Date((scope.month-1 ==-1 ? scope.year : scope.year-1), (scope.month-1 ==-1 ? 11 : scope.month-1), 0).getDate();
+        var pday = 1;
+        for(var i=prevMonthEnds; i>(prevMonthEnds-startDate); i--){
+          weeks[pointer].unshift([
+            (scope.month-1 ==-1 ? 11 : scope.month-1),
+            i,
+            (scope.month-1 ==-1 ? scope.year-1 : scope.year)]);
         }
         // rest of the month
-        for(var i=0; i<endDate; i++){
-          weeks[pointer].push(day);
+        for(var i=0; i<(42-startDate); i++){
+          weeks[pointer].push(day <= endDate ? [scope.month, day, scope.year] :
+            [
+              (scope.month+1 ==12 ? 0 : scope.month+1),
+              day-endDate,
+              (scope.month+1 ==12 ? scope.year+1 : scope.year)
+            ]);
           if(((startDate + day) % 7) == 0 ){
             weeks.push([]);
             pointer++;
           }
-          if(i < endDate) {day++;}
-        }
-        console.log('day',day);
+          day++;
 
-        if((startDate + day) % 7 !== 0){
-          console.log("has extra days at end of month",((7*(pointer+1))-day));
-          for(var i =0; i< ((7*(pointer+1))-(startDate+day-1)); i++){
-            weeks[pointer].push("");
-          }
         }
+
+        // day = 1;
+
         //scope.day_max;
 
         return weeks;
@@ -67,9 +74,9 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
       };
       scope.weeks = scope.getDates();
       scope.setDate= function(n){
-        scope.ngModel = scope.year + "-" + ((scope.month+1) < 10 ? "0"+ (scope.month+1) : scope.month+1 ) + "-" + (n < 10 ? "0"+ n : n);
+        scope.ngModel = n[2] + "-" + ((n[0]+1) < 10 ? "0"+ (n[0]+1) : n[0]+1 ) + "-" + (n[1] < 10 ? "0"+ n[1] : n[1]);
         jQuery(el).find('input').popup("hide");
-        console.log('change?');
+        console.log(scope.ngModel);
         scope.ngChange();
       };
       scope.advanceMonth = function(inc){
@@ -83,6 +90,7 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
 
         scope.nice_month = months[scope.month];
         scope.weeks = scope.getDates();
+        scope.day_max = new Date(scope.year, scope.month+1, 0).getDate();
 
       };
 
@@ -208,7 +216,7 @@ angular.module('templateMaker')
               "<tpl-url ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='url'\"></tpl-url>",
             "</div>",
           "</jupiter-draggable>",
-        "<div><button class=\"ui button\" ng-click=\"addRow()\">Add</button></div>",
+        "<div><button class=\"ui button\" ng-click=\"addRow()\">Add item</button></div>",
       "</div>"
     ].join(""),
     link: function(scope, el, attr){

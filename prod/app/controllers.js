@@ -2,6 +2,8 @@ angular.module("templateMaker").controller('MainController', [ "$scope", 'Templa
 function($scope, TemplateFactory, $Export,$Fields){
 
 
+  $scope.testField = {model: ""};
+
   $scope.blankSlate = function(){
     $scope.templateList=[];
     $scope.fields = [];
@@ -64,8 +66,13 @@ function($scope, TemplateFactory, $Export,$Fields){
             for(n=0;n<$scope.fields.length;n++){
               if($scope.fields[n].name==i){
                 console.log(droppedFields[i]);
-                $scope.fields[n].model = droppedFields[i];
-                $scope.fields[n].value = droppedFields[i];
+                if($scope.fields[n].type=="repeat"){
+                  $scope.fields[n].model = droppedFields[i];
+                } else {
+                  $scope.fields[n].model = droppedFields[i];
+                  $scope.fields[n].value = droppedFields[i];
+                }
+
               }
             }
           }

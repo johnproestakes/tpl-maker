@@ -16,8 +16,11 @@ body {margin-bottom:50px;}
     position: absolute;
     left: 0;
 }
+.ui.calendar.bottom.left.popup:before {background-color: #F9FAFB;}
+.ui.calendar .ui.table{border:none;}
 .ui.popup.calendar th {}
 .ui.popup.calendar {padding:0;}
 .ui.calendar .ui.table.day tr:nth-child(1) th {border:none; position:relative;}
 .ui.calendar .ui.table.day tr:nth-child(2) th {padding-top: .2em; padding-bottom: .3em; border-left:none;}
 .ui.calendar .ui.table tr .link {cursor:pointer;}
+.ui.calendar .ui.table tr .link.nextMonth {color: rgba(0,0,0,.25);}

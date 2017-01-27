@@ -4,13 +4,21 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
   var self = this;
 
   this.previewWindow = null;
+  this.removeTplIfs = function(data, fields){
 
+    return data;
+  };
   this.exportTemplate = function(files, i, $scope){
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
 				//TemplateFactory.updateFields(evt.target.result);
 				setTimeout(function(){
-				var data = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+
+        var data = self.removeTplIfs(data1, $scope.fields);
+
+
+
 				$scope.$apply(function(){
 					$scope.exported.push("export_"+files[i].name);
 				});
@@ -29,7 +37,8 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
 				setTimeout(function(){
-				var data = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+        var data = self.removeTplIfs(data1, $scope.fields);
 				self.downloadFile(data, "export_"+file.name);
 				}, 500);
 			};
@@ -39,7 +48,9 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
 
-				var data = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+        var data = self.removeTplIfs(data1, $scope.fields);
+
 				setTimeout(function(){
           if(self.previewWindow !== null){
             //close and then reopen
@@ -60,7 +71,12 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 		//var data = JSON.stringify(fields);
     var output = {};
     for (var n=0; n<fields.length; n++){
-      output[fields[n].name] = fields[n].value;
+      if(fields[n].type=="repeat"){
+        output[fields[n].name] = fields[n].model;
+      } else {
+        output[fields[n].name] = fields[n].value;
+      }
+
     }
 		saveAs(new Blob([JSON.stringify(output)], {type:"application/json;charset=utf-8"}), "export_fields.json");
 
@@ -80,8 +96,8 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 angular.module("templateMaker")
 .factory("$Fields", function $Fields(){
   var self = this;
-  this.fieldTypes = ["date","textarea","repeat"];
-  this.fieldAttr = {"length":"="};
+  this.fieldTypes = ["date","textarea","repeat","url"];
+  this.fieldAttr = {"length":"=", "required":"+"};
   this.foundFields = [];
   this.foundFieldsProcessed = {};
   //this.fieldPattern = /\#([0-9a-zA-Z\{\}\;\_]+[\:\t\e\x\t\a\r\e\a]?[\:\d\a\t\e]?)+\#/gi;
@@ -157,6 +173,8 @@ angular.module("templateMaker")
                 if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
                   if(self.fieldAttr[e]=="="){
                     field[section[0]] = section[1]*1;
+                  } else if(self.fieldAttr[e]=="+"){
+                    field[section[0]] = true;
                   } else {
                     field[section[0]] = section[1];
                   }
@@ -178,7 +196,14 @@ angular.module("templateMaker")
 
     if(loadLocal && localStorage.getItem(field.name)){
       if(field.type=="repeat"){
-        field.model = localStorage.getItem(field.name) ? JSON.parse(localStorage.getItem(field.name)) : []
+        try {
+          field.model = localStorage.getItem(field.name) ? JSON.parse(localStorage.getItem(field.name)) : [];
+        } catch (e) {
+          localStorage.setItem(field.name, JSON.stringify([]));
+          field.model = [];
+        } finally {
+
+        }
       } else {
         field.value = localStorage.getItem(field.name) ? unescape(localStorage.getItem(field.name)) : "";
         field.value = field.value.replace(/\/\/Q/g, '\"');
@@ -196,7 +221,7 @@ angular.module("templateMaker")
       output = false;
     } else {
       for(var i=0; i<$scope.fields.length; i++){
-        if($scope.fields[i].model==""){
+        if($scope.fields[i].hasOwnProperty("required") && $scope.fields[i].model==""){
           output = false;
         }
       }
@@ -357,6 +382,8 @@ angular.module("templateMaker")
 					}
 				}
 			}
+			//do stuff to output for tpl-ifs
+
 
 			return output;
 		};
