@@ -316,7 +316,7 @@ angular.module("templateMaker")
 		};
 	this.generateDateFromField = function(field, value, dataReplace){
 		var date = value.split("-");
-		var date_js = new Date(date[0], date[1], date[2]);
+		var date_js = new Date(date[0], (date[1]*1)-1, date[2]);
 		return $filter('date')(date_js, dataReplace.format);
 	};
 
