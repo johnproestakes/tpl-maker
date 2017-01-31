@@ -169,24 +169,14 @@ angular.module("templateMaker")
               field.type = section[0];
               field.format = section[1];
             } else {
-              for(var e in self.fieldAttr){
-                if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
-                  if(self.fieldAttr[e]=="="){
-                    field[section[0]] = section[1]*1;
-                  } else if(self.fieldAttr[e]=="+"){
-                    field[section[0]] = true;
-                  } else {
-                    field[section[0]] = section[1];
-                  }
-
-                }
-              }
+              field = self.extendAttrParameters(field, section);
 
             }
           } else {
             if(self.fieldTypes.indexOf(section)>-1){
               field.type = section;
             }
+            field = self.extendAttrParameters(field, [section, false]);
           }
         });
       }
@@ -213,7 +203,23 @@ angular.module("templateMaker")
     }
     return field;
   };
+this.extendAttrParameters = function(field, section){
+  console.log(field.name, section);
+  for(var e in self.fieldAttr){
+    if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
+      if(self.fieldAttr[e]=="="){
+        field[e] = section[1]*1;
+      } else if(self.fieldAttr[e]=="+"){
+        field[e] = true;
+      } else {
+        field[e] = section[1];
+      }
 
+    }
+  }
+  return field;
+
+};
   this.areAllFieldsCompleted = function($scope){
     var output = true;
 
@@ -257,6 +263,9 @@ angular.module("templateMaker")
         output.push(self.foundFieldsProcessed[i]);
         }
       }
+    //clear out fields
+    self.foundFields = [];
+    self.foundFieldsProcessed = [];
 		return output;
   };
 

@@ -83,9 +83,11 @@ angular.module('JupiterDragDrop')
 
         (function($){
           var timer = null;
-          
-          var dragParent = $(el).parents('.draggable').first();
 
+          var dragParent = $(el).parents('.draggable').first();
+          dragParent.attr("draggable", "false");
+
+          
           $(el).css("cursor", "move");
           $(el).on('mouseup', function(evt){
             dragParent.attr("draggable", "false");
@@ -94,7 +96,7 @@ angular.module('JupiterDragDrop')
 
           $(el).on('mousedown', function(evt){
 
-            if(!$DragDrop.isDragging){
+            //if(!$DragDrop.isDragging){
               // console.log(dragParent);
 
               $DragDrop.clearTargets();
@@ -106,21 +108,24 @@ angular.module('JupiterDragDrop')
                 parent: scope.$$prevSibling.dragParent,
                 index: scope.$$prevSibling.dragIndex
               });
-            }
+            //}
             evt.stopPropagation();
 
           });
-
-          $(el).on('dragstart', function(evt){
-            // console.log('dragstart', evt.target);
-
-            if(handle==target && evt.dataTransfer.setData){
-              $DragDrop.isDragging = true;
-              evt.dataTransfer.setData('text/plain', 'handle');
-            } else {
-              evt.preventDefault();
-            }
-          });
+          window.jupiterDragStart = function(evt){
+            evt.dataTransfer.setData('text/plain', 'handle');
+          };
+          //dragParent.attr("ondragstart", "jupiterDragStart(event)");
+          // $(el).on('dragstart', function(evt){
+          //   // console.log('dragstart', evt.target);
+          //
+          //   if(handle==target && evt.dataTransfer.setData){
+          //     $DragDrop.isDragging = true;
+          //     evt.dataTransfer.setData('text/plain', 'handle');
+          //   } else {
+          //     evt.preventDefault();
+          //   }
+          // });
 
           $(el).on('dragover', function(evt){
             evt.stopPropagation();

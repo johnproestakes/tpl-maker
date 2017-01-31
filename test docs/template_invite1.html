@@ -2,15 +2,15 @@
 Invite 1
 
 <p>
-<strong>Topic:</strong> {{ webinar_topic | length: 48 }}<br>
-<strong>Date:</strong> {{ webinar_date | date: "longDate" }}<br>
-<strong>Time:</strong> {{ webinar_time }}<br>
-<strong>Duration:</strong> {{ webinar_duration }}<br>
+<strong>Topic:</strong> {{ webinar_topic | length: 48 | required }}<br>
+<strong>Date:</strong> {{ webinar_date | date: "longDate" | required }}<br>
+<strong>Time:</strong> {{ webinar_time | required }}<br>
+<strong>Duration:</strong> {{ webinar_duration | required }}<br>
 </p>
 
 
 
-{{ webinar_intro | textarea }}
+{{ webinar_intro | textarea | required }}
 
 
 <ul tpl-if="webinar_agenda_bullets">

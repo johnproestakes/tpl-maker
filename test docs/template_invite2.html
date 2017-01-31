@@ -4,6 +4,9 @@
 <body>
 Invite 1
 
+{{ webinar_end_time | required }}
+
+
 <ul tpl-if="webinar_agenda_bullets">
 {{ webinar_agenda_bullets | repeat: `
   <li>## bullet_text | length: 128 ##</li>

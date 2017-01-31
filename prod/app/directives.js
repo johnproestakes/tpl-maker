@@ -6,39 +6,44 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
       "<div class=\"ui left icon input\">",
       "<i class=\"calendar icon\"></i>",
       "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\"/>",
-
       "<div class=\"ui calendar popup\">",
       "<table class=\"ui celled center aligned unstackable table seven column day\">",
         "<thead>",
         "<tr ><th colspan=\"7\">",
         "<span class=\"next link\" ng-click=\"advanceMonth(1)\"><i class=\"right chevron icon\"></i></span>",
         "<span class=\"prev link\" ng-click=\"advanceMonth(-1)\"><i class=\"left chevron icon\"></i></span>",
-        "<span class=\"link\">{{nice_month}} {{year}}</span> </th></tr>",
+        "<span class=\"link\">{{nice_month | date: \"MMMM yyyy\"}}</span> </th></tr>",
         "<tr><th>S</th><th>M</th><th>T</th><th>W</th><th>R</th><th>F</th><th>S</th></tr></thead>",
       "<tr ng-repeat=\"week in weeks\">",
-        "<td class=\"link\" ng-click=\"setDate(n)\" ng-class=\"{nextMonth: n[0]!==month }\" ng-repeat=\"n in week track by $index\">{{n[1]}}</td>",
+        "<td class=\"link\" ng-click=\"setDate(n)\" ng-class=\"{nextMonth: n[0]!==month, selected:n[0]==sel_month&&n[1]==sel_day }\" ng-repeat=\"n in week track by $index\">{{n[1]}}</td>",
       "</tr></table>",
       "</div>"
     ].join(""),
     link: function(scope, el, attr){
-      scope.year = new Date().getFullYear();
-      scope.day = new Date().getDate();
-      scope.month = new Date().getMonth();
 
+      if(scope.ngModel.match(/([0-9]{4})-([0-9]{2})-([0-9]{2})/g)) {
+        var d = scope.ngModel.split("-");
+        scope.sel_year = d[0]*1;
+        scope.sel_month = (d[1]*1)-1;
+        scope.sel_day = d[2]*1;
+        scope.year = d[0]*1;
+        scope.month = (d[1]*1)-1;
+        scope.day = d[2]*1;
 
+      } else {
+        scope.year = new Date().getFullYear();
+        scope.day = new Date().getDate();
+        scope.month = new Date().getMonth();
+      }
 
+      scope.nice_month = new Date(scope.year, scope.month);
 
-      var months = ["January","February","March", "April", "May", "June","July","August","September","October","November","December"];
-      scope.nice_month = months[scope.month];
-      scope.day_max = new Date(scope.year, (scope.month+1), 0).getDate();
-      // scope.$apply();
 
       scope.getDates = function(){
         var startDate = new Date(scope.year, scope.month, 1).getDay();
         var endDate = new Date(scope.year, scope.month+1, 0).getDate();
-        var weeks = [[]];
-        var pointer = 0;
-        var day = 1;
+        var weeks = [[]], pointer = 0, day = 1;
+
         //first week
 
         var prevMonthEnds = new Date((scope.month-1 ==-1 ? scope.year : scope.year-1), (scope.month-1 ==-1 ? 11 : scope.month-1), 0).getDate();
@@ -49,6 +54,7 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
             i,
             (scope.month-1 ==-1 ? scope.year-1 : scope.year)]);
         }
+
         // rest of the month
         for(var i=0; i<(42-startDate); i++){
           weeks[pointer].push(day <= endDate ? [scope.month, day, scope.year] :
@@ -65,16 +71,25 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
 
         }
 
-        // day = 1;
-
-        //scope.day_max;
-
         return weeks;
 
       };
+
+
+
+
       scope.weeks = scope.getDates();
       scope.setDate= function(n){
         scope.ngModel = n[2] + "-" + ((n[0]+1) < 10 ? "0"+ (n[0]+1) : n[0]+1 ) + "-" + (n[1] < 10 ? "0"+ n[1] : n[1]);
+
+        scope.day = n[1];
+        scope.month = n[0];
+        scope.year = n[2];
+
+        scope.sel_day = n[1];
+        scope.sel_month = n[0];
+        scope.sel_year = n[2];
+
         jQuery(el).find('input').popup("hide");
         console.log(scope.ngModel);
         scope.ngChange();
@@ -88,19 +103,19 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
         if(inc<0 && scope.month==11) scope.year-=1;
         if(inc>0 && scope.month==0 ) scope.year+=1;
 
-        scope.nice_month = months[scope.month];
+        scope.nice_month = new Date(scope.year, scope.month);
         scope.weeks = scope.getDates();
-        scope.day_max = new Date(scope.year, scope.month+1, 0).getDate();
 
       };
 
       $timeout(function(){
 
-
-
         var popup = jQuery(el).find('.ui.popup');
         jQuery(el).find('input').popup({
           on: "click",
+          boundary: document.body,
+          jitter: 50,
+          position: 'bottom left',
           closable: false,
           popup: popup
         });
@@ -181,13 +196,13 @@ angular.module('templateMaker')
             "<div class=\"title\">Templates <span class=\"ui label\" ng-if=\"templateList.length>0\">{{templateList.length}}</span></div>",
             "</div>",
           "</div>",
-        "<div class=\"step\" ng-click=\"templateLoaded()&&navigateTo('#/fields')\" ng-class=\"{completed:areAllFieldsCompleted()}\">",
+        "<div class=\"step\" ng-click=\"templateLoaded()&&navigateTo('#/fields')\" ng-class=\"{completed:areAllFieldsCompleted(), disabled: !templateLoaded()}\">",
           "<div class=\"content\">",
             "<div class=\"title\">Fields",
               "<span class=\"ui label\" ng-if=\"fields.length>0\">{{fields.length}}</span></div>",
             "</div>",
           "</div>",
-        "<div class=\"step\" ng-click=\"areAllFieldsCompleted()&&navigateTo('#/export')\">",
+        "<div class=\"step\" ng-click=\"areAllFieldsCompleted()&&navigateTo('#/export')\" ng-class=\"{disabled: !areAllFieldsCompleted()}\">",
           "<div class=\"content\">",
             "<div class=\"title\">Export</div>",
             "</div>",
@@ -205,7 +220,7 @@ angular.module('templateMaker')
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
       "<div class=\"ui segment\">",
-        "<jupiter-draggable class=\"draggable repeat\" drag-parent=\"field.model\" drag-index=\"$$index\" drag-item=\"field.model[$$index]\" ng-repeat=\"row in field.model track by $index\" ng-init=\"$$index = $index\" >",
+        "<jupiter-draggable class=\"draggable repeat\" drag-parent=\"field.model\" drag-index=\"$$index\" drag-item=\"field.model[$$index]\" ondragstart=\"jupiterDragStart(event)\" draggable=\"true\" ng-repeat=\"row in field.model track by $index\" ng-init=\"$$index = $index\" >",
           "<span class=\"close link\" ng-click=\"removeRow($index)\"><i class=\"close icon\"></i></span>",
           "<div ng-hide=\"field.model.length<=1\" jupiter-drag-handle class=\"drag-handle\"></div>",
           "<div ng-repeat=\"col in field.fields\" class=\"ui field\">",
