@@ -1,3 +1,7 @@
+.time a {
+  display: inline-block;
+  padding: .5em; }
+
 .file-dropper {
   border: dashed 3px #ccc;
   color: #ccc;
@@ -10,6 +14,22 @@
     border: solid 3px #701a32;
     color: #701a32;
     background-color: rgba(112, 26, 50, 0.5); }
+
+.ui.fixed.container {
+  position: fixed;
+  background-color: #fff;
+  border-top: 1px solid rgba(34, 36, 38, 0.15);
+  box-shadow: 0 1px 2px 0 rgba(34, 36, 38, 0.15);
+  min-height: 0 1px 2px 0 rgba(34, 36, 38, 0.15);
+  z-index: 101;
+  margin: 0;
+  width: 100%;
+  bottom: 0;
+  right: 0;
+  left: 0; }
+  .ui.fixed.container .ui.container {
+    margin-top: 1em;
+    margin-bottom: 1em; }
 
 jupiter-draggable,
 .draggable {

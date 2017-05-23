@@ -1,11 +1,26 @@
 angular.module("templateMaker",['ngRoute','JupiterDragDrop']);
+angular.module("templateMaker").directive('uiPopup', ["$timeout", function($timeout){
+  return {
+    restrict: "A",
+    scope: {popupId:"@"},
+    link: function(scope, el, attr){
+      $timeout(function(){
+        console.log(scope,el,attr);
+        jQuery(el).popup({
+          on: "click",
+          popup: jQuery("#" + attr.popupId)
+        });
+      });
+    }
+  };
+}]);
 
 angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', function(TemplateFactory,saveAs){
   var self = this;
 
   this.previewWindow = null;
   this.removeTplIfs = function(data, fields){
-
+    if(data.indexOf("–")) {console.log("found –");}
     return data;
   };
   this.exportTemplate = function(files, i, $scope){
@@ -96,7 +111,13 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 angular.module("templateMaker")
 .factory("$Fields", function $Fields(){
   var self = this;
-  this.fieldTypes = ["date","textarea","repeat","url"];
+  this.fieldTypes = [
+      "date",
+      "textarea",
+      "repeat",
+      "url",
+      // "time"
+    ];
   this.fieldAttr = {"length":"=", "required":"+"};
   this.foundFields = [];
   this.foundFieldsProcessed = {};

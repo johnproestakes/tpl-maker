@@ -135,7 +135,8 @@ angular.module('templateMaker')
       "<tpl-textbox ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='text'\"></tpl-textbox>",
       "<tpl-url ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='url'\"></tpl-url>",
       "<tpl-date ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='date'\"/></tpl-date>",
-      "<tpl-repeat ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='repeat'\"/></tpl-date>"
+      "<tpl-repeat ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='repeat'\"/></tpl-date>",
+      "<tpl-time ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='time'\"/></tpl-time>"
     ].join("")
   };
 }]);
@@ -301,6 +302,89 @@ angular.module('templateMaker').directive('tplTextbox', ['$timeout',function($ti
     ].join(""),
     link: function(scope, el, attr){
       $timeout(function(){
+        console.log("tpl-textbox");
+      });
+    }
+  };
+}]);
+
+angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeout){
+  return {
+    restrict: "E",
+    scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
+    template: [
+
+
+      "<div class=\"ui left icon input\" ng-class=\"{'right labeled': field.length,'error': ngModel.length>field.length}\">",
+      "<i class=\"clock icon\"></i>",
+      "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\" placeholder=\"\">",
+      "</div>",
+      "<div class=\"ui time popup\" style=\"width:400px\">",
+        "<div class=\"ui grid\">",
+        "<div class=\"six wide column\">",
+          "<a class=\"hour\" href=\"javascript:angular.noop()\" ng-repeat=\"item in hourOptions\">{{item.label}}</a>",
+        "</div>",
+        "<div class=\"five wide column\">",
+          "<a href=\"#\" ng-repeat=\"item in timezoneOptions\">{{item}}</a>",,
+        "</div>",
+        "</div>",
+      "</div>"
+    ].join(""),
+    link: function(scope, el, attr){
+
+      scope.timeParts = {
+        h: 0,
+        m: 0,
+        p: "AM",
+        t: 0
+      };
+      var regex = /([0-9]{1,2})\:([0-9]{2}) (\A\M|\P\M) ([A-Z]{3})?/g;
+      var b = scope.ngModel.match(regex);
+      if(b) {
+        var match = regex.exec(scope.ngModel);
+        console.log(match);
+        scope.timeParts.h = match[1]*1;
+        scope.timeParts.m = match[2]*1;
+        scope.timeParts.p = match[3];
+        if(match[4] !== null)
+          scope.timeParts.t = match[4];
+          
+        console.log(scope.timeParts);
+      } else {
+        // scope.year = new Date().getFullYear();
+        // scope.day = new Date().getDate();
+        // scope.month = new Date().getMonth();
+      }
+      // scope.
+
+      scope.getTimezones = function(){
+        return ["EST", "CST", "MST", "PST"];
+      };
+      scope.hourOptions = [];
+      scope.timezoneOptions = [];
+
+      scope.getHours = function(){
+        var output = [];
+        for(i=1; i<=12; i++){
+          output.push({h:i, m:0, label: (i<10? "0"+i : i) +":00"});
+          output.push({h:i, m:30, label: (i<10? "0"+i : i) +":30"});
+        }
+          return output;
+
+      };
+      scope.hourOptions = scope.getHours();
+
+      $timeout(function(){
+        var popup = jQuery(el).find('.ui.popup');
+        jQuery(el).find('input').popup({
+          on: "click",
+          boundary: document.body,
+          jitter: 50,
+          position: 'bottom left',
+          closable: false,
+          popup: popup
+        });
+
         console.log("tpl-textbox");
       });
     }

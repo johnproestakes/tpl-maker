@@ -6,9 +6,8 @@ webinar_date: call
 
 Invite 2<br>
 
-#webinar_date:textarea#<br><br><br>
+{{webinar_date| date: "longDate"}}
 
 
-#webinar_time:date#
-
-#webinar_speaker:date#
+{{webinar_time | time | replace: ["AM","a.m.", "PM", "p.m."]}}
+&mdash;
