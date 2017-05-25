@@ -1,0 +1,7 @@
+
+{{ webinar_session
+  | label: "Webinar Title"
+  | instructions: "Usually this value is just 1 (Most times)"
+  | required }}
+
+<h3>{{webinar_time_start | label:"Webinar Start Time" | time: "optumTime" }} &ndash; {{webinar_time_end | time: optumTime+ZZZ }}</h3>

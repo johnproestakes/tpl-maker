@@ -3,6 +3,7 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
     restrict: "E",
     scope:{ngModel:"=",ngChange:"&"},
     template: [
+        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui left icon input\">",
       "<i class=\"calendar icon\"></i>",
       "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\"/>",
@@ -220,6 +221,7 @@ angular.module('templateMaker')
     restrict: "E",
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
+        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui segment\">",
         "<jupiter-draggable class=\"draggable repeat\" drag-parent=\"field.model\" drag-index=\"$$index\" drag-item=\"field.model[$$index]\" ondragstart=\"jupiterDragStart(event)\" draggable=\"true\" ng-repeat=\"row in field.model track by $index\" ng-init=\"$$index = $index\" >",
           "<span class=\"close link\" ng-click=\"removeRow($index)\"><i class=\"close icon\"></i></span>",
@@ -278,6 +280,7 @@ angular.module('templateMaker').directive('tplTextarea', ['$timeout',function($t
     restrict: "E",
     scope:{field:"=", ngModel:"=",ngChange:"&"},
     template: [
+        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<textarea ng-model=\"ngModel\" ng-change=\"ngChange()\"></textarea>"
     ].join(""),
     link: function(scope, el, attr){
@@ -294,7 +297,7 @@ angular.module('templateMaker').directive('tplTextbox', ['$timeout',function($ti
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
 
-
+      "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui input\" ng-class=\"{'right labeled': field.length,'error': ngModel.length>field.length}\">",
       "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\" placeholder=\"\">",
       "<div ng-if=\"field.length\" class=\"ui label\" ng-class=\"{'red': ngModel.length>field.length}\"><i class=\"warning sign icon\" ng-if=\"field.length<ngModel.length\"></i> {{field.length - ngModel.length}}</div>",
@@ -314,21 +317,34 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
 
+      "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
+      "<div class=\"ui action input\">",
 
-      "<div class=\"ui left icon input\" ng-class=\"{'right labeled': field.length,'error': ngModel.length>field.length}\">",
-      "<i class=\"clock icon\"></i>",
-      "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\" placeholder=\"\">",
+      "<input type=\"hidden\" ng-model=\"ngModel\">",
+        "<select class=\"ui compact selection dropdown\" ng-model=\"time\" ng-change=\"updateFieldValues()\">",
+          "<option ng-repeat=\"hour in hourOptions track by $index\">{{hour}}</option>",
+          "</select>",
+
+      "<select class=\"ui compact selection dropdown\" ng-model=\"timezone\" ng-change=\"updateFieldValues()\">",
+        "<option ng-repeat=\"timezone in timezoneOptions track by $index\">{{timezone}}</option>",
+        "</select>",
+
+
       "</div>",
-      "<div class=\"ui time popup\" style=\"width:400px\">",
-        "<div class=\"ui grid\">",
-        "<div class=\"six wide column\">",
-          "<a class=\"hour\" href=\"javascript:angular.noop()\" ng-repeat=\"item in hourOptions\">{{item.label}}</a>",
-        "</div>",
-        "<div class=\"five wide column\">",
-          "<a href=\"#\" ng-repeat=\"item in timezoneOptions\">{{item}}</a>",,
-        "</div>",
-        "</div>",
-      "</div>"
+
+
+
+
+      // "<div class=\"ui time popup\" style=\"width:400px\">",
+      //   "<div class=\"ui grid\">",
+      //   "<div class=\"six wide column\">",
+      //     "<a class=\"hour\" href=\"javascript:angular.noop()\" ng-repeat=\"item in hourOptions\">{{item.label}}</a>",
+      //   "</div>",
+      //   "<div class=\"five wide column\">",
+      //     "<a href=\"#\" ng-repeat=\"item in timezoneOptions\">{{item}}</a>",,
+      //   "</div>",
+      //   "</div>",
+      // "</div>"
     ].join(""),
     link: function(scope, el, attr){
 
@@ -340,6 +356,9 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
       };
       var regex = /([0-9]{1,2})\:([0-9]{2}) (\A\M|\P\M) ([A-Z]{3})?/g;
       var b = scope.ngModel.match(regex);
+
+
+
       if(b) {
         var match = regex.exec(scope.ngModel);
         console.log(match);
@@ -348,7 +367,7 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
         scope.timeParts.p = match[3];
         if(match[4] !== null)
           scope.timeParts.t = match[4];
-          
+
         console.log(scope.timeParts);
       } else {
         // scope.year = new Date().getFullYear();
@@ -361,13 +380,21 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
         return ["EST", "CST", "MST", "PST"];
       };
       scope.hourOptions = [];
-      scope.timezoneOptions = [];
+      scope.timezoneOptions = scope.getTimezones();
+
+      scope.updateFieldValues = function(){
+        scope.ngModel = (scope.time === undefined ? "12:00 AM" : scope.time) + " " + (scope.timezone===undefined ? "EST" : scope.timezone);
+        scope.ngChange();
+      };
 
       scope.getHours = function(){
         var output = [];
-        for(i=1; i<=12; i++){
-          output.push({h:i, m:0, label: (i<10? "0"+i : i) +":00"});
-          output.push({h:i, m:30, label: (i<10? "0"+i : i) +":30"});
+        for(i=0; i<=23; i++){
+
+
+          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":00 " + (i>12 ? "PM" : "AM" ));
+          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":30 " + (i>12 ? "PM" : "AM" ));
+
         }
           return output;
 
@@ -375,6 +402,18 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
       scope.hourOptions = scope.getHours();
 
       $timeout(function(){
+
+        if(/[0-9]{1,2}:[0-9]{1,2}\s(AM|PM)\s[A-Z]{3}/.test(scope.ngModel)){
+          var time_js = scope.ngModel.split(" ");
+          scope.time = time_js[0] + " " + time_js[1];
+          scope.timezone = time_js[2];
+        } else {
+          scope.$apply(function(){
+            scope.time = "12:00 PM";
+            scope.timezone = "EST";
+          });
+
+        }
         var popup = jQuery(el).find('.ui.popup');
         jQuery(el).find('input').popup({
           on: "click",
@@ -384,6 +423,7 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
           closable: false,
           popup: popup
         });
+
 
         console.log("tpl-textbox");
       });
@@ -396,6 +436,7 @@ angular.module('templateMaker').directive('tplUrl', ['$timeout',function($timeou
     restrict: "E",
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
+        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\">",
       "<div ng-if=\"doesLinkNeedTrackingCode(ngModel)\">You will need to generate a tracking code for this link.</div>"
     ].join(""),
