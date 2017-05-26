@@ -152,7 +152,8 @@ angular.module("templateMaker")
 
           // field.content this is where the pattern is.
           // field.model //values need to merge with the fields.
-          return content.join("");
+          // console.log("delimiter", field.delimiter);
+          return content.join(field.delimiter===undefined ? "" : field.delimiter);
         }
       },
       "date": {
@@ -204,7 +205,8 @@ angular.module("templateMaker")
       "length":"=",
       "required":"+",
       "instructions":"",
-      "label":""
+      "label":"",
+      "delimiter":""
     };
   this.foundFields = [];
   this.foundFieldsProcessed = {};

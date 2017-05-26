@@ -231,6 +231,7 @@ angular.module('templateMaker')
               "<tpl-textarea ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='textarea'\"></tpl-textarea>",
               "<tpl-textbox ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='text'\"></tpl-textbox>",
               "<tpl-date ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='date'\"></tpl-date>",
+              "<tpl-time ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='time'\"></tpl-time>",
               "<tpl-url ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='url'\"></tpl-url>",
             "</div>",
           "</jupiter-draggable>",
