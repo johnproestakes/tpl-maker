@@ -44,4 +44,37 @@
     <section class="ui container" ng-view></section>
     </div>
 </body>
+
+<script>
+if(!window.HashChangeEvent)(function(){
+var lastURL=document.URL;
+window.addEventListener("hashchange",function(event){
+  Object.defineProperty(event,"oldURL",{enumerable:true,configurable:true,value:lastURL});
+  Object.defineProperty(event,"newURL",{enumerable:true,configurable:true,value:document.URL});
+  lastURL=document.URL;
+});
+}());
+
+  function locationHashChanged() {
+    console.log(location.hash);
+    ga('send', 'pageview', {
+   'page': location.pathname + location.search  + location.hash
+  });
+  }
+
+  if ("onhashchange" in window) {
+      //alert("The browser supports the hashchange event!");
+      window.onhashchange = locationHashChanged;
+  }
+
+  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+
+  ga('create', 'UA-99875123-2', 'auto');
+  ga('send', 'pageview');
+
+</script>
 </html>
