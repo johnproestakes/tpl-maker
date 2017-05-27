@@ -125,18 +125,20 @@ function($scope, TemplateFactory, $Export,$Fields){
 
 	$scope.exportDownloadSingleFile = function(file){
 		$Export.exportDownloadSingleTemplate(file, $scope);
-
+    window.ga('send', 'event', "EXPORT", "download", "Download Single File");
 		};
   $scope.exportAllTemplates = function(){
 		$Export.exportAll($scope.templateList, $scope);
+    window.ga('send', 'event', "EXPORT", "download", "Download All Files");
 		};
   $scope.previewHTML=function(file){
 		$Export.exportPreviewBrowserTemplate(file, $scope);
-
+    window.ga('send', 'event', "EXPORT", "preview", "Preview Single File");
 		};
 
 	$scope.importFieldValues = function(text){
 		$scope.fields = TemplateFactory.importFieldValues(text);
+    window.ga('send', 'event', "IMPORT", "field values", "Import field values");
 		};
 
 
