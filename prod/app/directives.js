@@ -127,22 +127,6 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
 }]);
 
 angular.module('templateMaker')
-.directive('tplField', ['$timeout',function($timeout){
-  return {
-    restrict: "E",
-    scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
-    template: [
-      "<tpl-textarea ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='textarea'\"></tpl-textarea>",
-      "<tpl-textbox ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='text'\"></tpl-textbox>",
-      "<tpl-url ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='url'\"></tpl-url>",
-      "<tpl-date ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='date'\"/></tpl-date>",
-      "<tpl-repeat ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='repeat'\"/></tpl-date>",
-      "<tpl-time ng-model=\"ngModel\" field=\"field\" ng-change=\"ngChange()\" ng-if=\"field.type=='time'\"/></tpl-time>"
-    ].join("")
-  };
-}]);
-
-angular.module('templateMaker')
 .directive('fileDropper', ['$timeout', function($timeout){
 	return {
 		restrict: "E",
@@ -394,8 +378,8 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
         for(i=0; i<=23; i++){
 
 
-          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":00 " + (i>12 ? "PM" : "AM" ));
-          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":30 " + (i>12 ? "PM" : "AM" ));
+          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":00 " + (i>=12 ? "PM" : "AM" ));
+          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":30 " + (i>=12 ? "PM" : "AM" ));
 
         }
           return output;
