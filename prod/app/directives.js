@@ -423,31 +423,13 @@ angular.module('templateMaker').directive('tplUrl', ['$timeout',function($timeou
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
         "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
-      "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\">",
-      "<div ng-if=\"doesLinkNeedTrackingCode(ngModel)\">You will need to generate a tracking code for this link.</div>"
+      "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\">"
     ].join(""),
     link: function(scope, el, attr){
       $timeout(function(){
         console.log("tpl-url");
 
-        scope.doesLinkHaveTrackingCode = function(url){
-          var output = false;
-          if(url.match(/(\?|&)([a-zA-Z]{1,4})=((.*?){1,99})\:((.*?){1,99})\:/)){
-            output = true;
-          }
-          return output;
-        };
-        scope.doesLinkNeedTrackingCode = function(url){
-          var output = false;
-          if(url.match(/^http(s)?:\/\/(.*?)?optum(.*?)?\.com/)) {
-            output = true;
-            if(scope.doesLinkHaveTrackingCode(url) ){
-              output = false;
-            }
 
-          }
-          return output;
-        };
       });
     }
   };
