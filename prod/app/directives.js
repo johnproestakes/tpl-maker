@@ -183,7 +183,7 @@ angular.module('templateMaker')
           "</div>",
         "<div class=\"step\" ng-click=\"templateLoaded()&&navigateTo('#/fields')\" ng-class=\"{completed:areAllFieldsCompleted(), disabled: !templateLoaded()}\">",
           "<div class=\"content\">",
-            "<div class=\"title\">Fields",
+            "<div class=\"title\">Fields ",
               "<span class=\"ui label\" ng-if=\"fields.length>0\">{{fields.length}}</span></div>",
             "</div>",
           "</div>",
