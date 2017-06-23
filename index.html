@@ -34,6 +34,7 @@
         <div class="item"><img src="assets/logo.png"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
         <a href="javascript:angular.noop()" ng-click="blankSlate()" class="item">New Workspace</a>
         <div class="right menu">
+          <a href="#/build-tag" class="item">Tag Builder</a>
           <a href="#/help" class="item">Help?</a>
           </div>
         </div>
@@ -56,8 +57,7 @@
   }());
 
   function locationHashChanged() {
-    console.log(location.hash);
-    ga('send', 'pageview', {
+    window.ga('send', 'pageview', {
    'page': location.pathname + location.search  + location.hash
   });
   }
@@ -71,6 +71,16 @@
   (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
   m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
   })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+  if(location.href.indexOf("localhost")>-1){
+    window.ga = function(args){
+      var output = [];
+      for (var i = 0; i < arguments.length; i++) {
+        output.push(arguments[i]);
+      }
+      console.log("%c GOOGLE ANALYTICS [DEBUG]: "+ output.join(", "), "background-color:lime");
+    };
+  }
 
 
   ga('create', 'UA-99875123-2', 'auto');

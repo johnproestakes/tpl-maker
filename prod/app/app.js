@@ -48,7 +48,9 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			};
 			reader.readAsBinaryString(files[i]);
 		};
-	this.exportDownloadSingleTemplate = function(file, $scope){
+
+  
+  this.exportDownloadSingleTemplate = function(file, $scope){
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
 				setTimeout(function(){
@@ -120,11 +122,71 @@ angular.module("templateMaker")
   };
   this.fieldTypes = {
       "text": {
+        label:"Text",
+        parameters: ["length", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
           return field.value;
         }
       },
+
+      "date": {
+        label:"Date Picker",
+        parameters: ["dateFormat", "instructions", "required", "label"],
+        renderField: function(field, replaceAttr, value){
+          console.log(field, replaceAttr,value);
+          var date = field.value.split("-");
+      		var date_js = new Date(date[0], (date[1]*1)-1, date[2]);
+      		var date_replace = $filter('date')(date_js, replaceAttr== {} ? "longDate" : replaceAttr.format);
+
+          return date_replace;
+        }
+      },
+      "time": {
+        label:"Time Picker",
+        parameters: ["timeFormat", "instructions", "required", "label"],
+        renderField: function(field, replaceAttr, value){
+          // 00:00 AM PST
+          var clock = field.value.split(" ");
+          var time = clock[0].split(":");
+      		var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ? time[0]*1 + 12 : time[0]*1 ), time[1]*1, 0, 0);
+
+          //add custom filter for timezone.
+          //console.log(time);
+
+          var format = replaceAttr.format === undefined || replaceAttr.format=="" ? "shortTime" : replaceAttr.format;
+
+          format = (format=="shortTime+ZZZ") ? "h:mm '"+clock[1]+"' ZZZ" : format;
+          format = (format=="shortTime") ? "h:mm '"+clock[1]+"'" : format;
+          console.log("parts", clock);
+          format = (format=="optumTime+ZZZ") ? "h:mm '"+(clock[1]=="AM"? "a.m." : "p.m.")+"' ZZZ" : format;
+          format = (format=="optumTime") ? "h:mm '"+(clock[1]=="AM"? "a.m.":"p.m.")+"'" : format;
+
+          format = format.replace(new RegExp("ZZZ", "g"), "'"+clock[2]+"'");
+
+      		var time_replace = $filter('date')(time_js, format);
+          console.log(time_replace);
+          return time_replace;
+        }
+      },
+      "textarea": {
+        label:"Long Text",
+        parameters: ["length", "instructions", "required", "label"],
+        renderField: function(field, replaceAttr, value){
+          return field.value;
+        }
+      },
+      "url" : {
+        label:"URL",
+        parameters: ["length", "instructions", "required", "label"],
+        renderField: function(field, replaceAttr, value){
+          //do i validate the url? probably not.
+          return field.value;
+        }
+      },
+
       "repeat" : {
+        label:"Repeating Block",
+        parameters: ["label"],
         renderField: function(field, replaceAttr, value){
           var content = [];
           for(row = 0; row<field.model.length; row++){
@@ -135,9 +197,7 @@ angular.module("templateMaker")
 
                   field.fields[n].model = field.model[row][field.fields[n].name];
                   field.fields[n].value = field.fields[n].model;
-                  console.log('building field', field.fields[n]);
-
-                  var fieldRender = self.fieldTypes[field.fields[n].type].renderField(field.fields[n],field.fields[n].data_replace[0][1], field.model[row][field.fields[n].name]);
+                  var fieldRender = self.fieldTypes[field.fields[n].type].renderField(field.fields[n], field.fields[n].data_replace[1], field.model[row][field.fields[n].name] );
                   console.log("replace", field.fields[n].data_replace[0], fieldRender);
                   content[row] = content[row].replace(field.fields[n].data_replace[0], fieldRender === undefined ? "" : fieldRender);
                 } else {
@@ -155,51 +215,7 @@ angular.module("templateMaker")
           // console.log("delimiter", field.delimiter);
           return content.join(field.delimiter===undefined ? "" : field.delimiter);
         }
-      },
-      "date": {
-        renderField: function(field, replaceAttr, value){
-
-          var date = field.value.split("-");
-      		var date_js = new Date(date[0], (date[1]*1)-1, date[2]);
-      		var date_replace = $filter('date')(date_js, replaceAttr== {} ? "longDate" : replaceAttr.format);
-
-          return date_replace;
-        }
-      },
-      "time": {
-        renderField: function(field, replaceAttr, value){
-          // 00:00 AM PST
-          var clock = field.value.split(" ");
-          var time = clock[0].split(":");
-      		var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ? time[0]*1 + 12 : time[0]*1 ), time[1]*1, 0, 0);
-
-          //add custom filter for timezone.
-          //console.log(time);
-
-          var format = replaceAttr.format === undefined ? "shortTime" : replaceAttr.format;
-
-          format = (format=="shortTime+ZZZ") ? "h:mm a ZZZ" : format;
-          format = (format=="optumTime+ZZZ") ? "h:mm '"+(clock[1]=="AM"?"a.m.":"p.m.")+"' ZZZ" : format;
-          format = (format=="optumTime") ? "h:mm '"+(clock[1]=="AM"?"a.m.":"p.m.")+"'" : format;
-
-          format = format.replace(new RegExp("ZZZ", "g"), "'"+clock[2]+"'");
-
-      		var time_replace = $filter('date')(time_js, format);
-          console.log(time_replace);
-          return time_replace;
-        }
-      },
-      "textarea": {
-        renderField: function(field, replaceAttr, value){
-          return field.value;
-        }
-      },
-      "url" : {
-        renderField: function(field, replaceAttr, value){
-          return field.value;
-        }
-      }
-      // "time"
+      }// "time"
     };
   this.fieldAttr = {
       "length":"=",
@@ -249,7 +265,7 @@ angular.module("templateMaker")
     var output = {};
     output.fields = [];
     if(content.length>0){
-      output.content = content[0].substr(1,content[0].length-2);
+      output.content = content[0].replace(/^`((\n|.*)*)`$/gm, "$1");
       //find fields in the repeat string
       var fields = output.content.match(/\#\#(.*?)\#\#/g);
       var fieldObjs = [];
@@ -289,12 +305,12 @@ angular.module("templateMaker")
           if(section.indexOf(":")>-1){
             section = section.split(":");
             for (var i = 0; i<section.length; i++){
-              section[i] = (section[i].replace(/"/g, "")).trim();
+              section[i] = (section[i].replace(/^"(.*)"$/g, "$1")).trim();
             }
 
             if(self.typeExists(section[0])){
               field.type = section[0];
-              field.format = section[1];
+              field.format = section[1].replace(/^"(.*)"$/g, "$1");
             } else {
               field = self.extendAttrParameters(field, section);
 
@@ -331,7 +347,7 @@ angular.module("templateMaker")
     return field;
   };
   this.extendAttrParameters = function(field, section){
-    console.log(field.name, section);
+    console.log("building", field.name, section);
     for(var e in self.fieldAttr){
       if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
         if(self.fieldAttr[e]=="="){
@@ -345,7 +361,7 @@ angular.module("templateMaker")
           console.log(section[1]);
           field[e] = section[1];
         } else {
-          field[e] = section[1];
+          field[e] = section[1].trim().replace(/^"(.*)"$/, "$1");
         }
 
       }

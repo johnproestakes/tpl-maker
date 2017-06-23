@@ -3,7 +3,6 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
     restrict: "E",
     scope:{ngModel:"=",ngChange:"&"},
     template: [
-        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui left icon input\">",
       "<i class=\"calendar icon\"></i>",
       "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\"/>",
@@ -212,12 +211,13 @@ angular.module('templateMaker')
           "<div ng-hide=\"field.model.length<=1\" jupiter-drag-handle class=\"drag-handle\"></div>",
           "<div ng-repeat=\"col in field.fields\" class=\"ui field\">",
             "<label>{{col.label ? col.label : col.name }}</label>",
-              "<p ng-if=\"col.instrctions\">{{col.instructions}}</p>",
+              "<p ng-if=\"col.instructions\">{{col.instructions}}</p>",
               "<tpl-textarea ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='textarea'\"></tpl-textarea>",
               "<tpl-textbox ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='text'\"></tpl-textbox>",
               "<tpl-date ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='date'\"></tpl-date>",
               "<tpl-time ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='time'\"></tpl-time>",
               "<tpl-url ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='url'\"></tpl-url>",
+
             "</div>",
           "</jupiter-draggable>",
         "<div><button class=\"ui button\" ng-click=\"addRow()\">Add item</button></div>",
@@ -266,7 +266,6 @@ angular.module('templateMaker').directive('tplTextarea', ['$timeout',function($t
     restrict: "E",
     scope:{field:"=", ngModel:"=",ngChange:"&"},
     template: [
-        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<textarea ng-model=\"ngModel\" ng-change=\"ngChange()\"></textarea>"
     ].join(""),
     link: function(scope, el, attr){
@@ -282,8 +281,6 @@ angular.module('templateMaker').directive('tplTextbox', ['$timeout',function($ti
     restrict: "E",
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
-
-      "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui input\" ng-class=\"{'right labeled': field.length,'error': ngModel.length>field.length}\">",
       "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\" placeholder=\"\">",
       "<div ng-if=\"field.length\" class=\"ui label\" ng-class=\"{'red': ngModel.length>field.length}\"><i class=\"warning sign icon\" ng-if=\"field.length<ngModel.length\"></i> {{field.length - ngModel.length}}</div>",
@@ -303,7 +300,6 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
 
-      "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<div class=\"ui action input\">",
 
       "<input type=\"hidden\" ng-model=\"ngModel\">",
@@ -422,7 +418,6 @@ angular.module('templateMaker').directive('tplUrl', ['$timeout',function($timeou
     restrict: "E",
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
-        "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
       "<input type=\"text\" ng-model=\"ngModel\" ng-change=\"ngChange()\">"
     ].join(""),
     link: function(scope, el, attr){
