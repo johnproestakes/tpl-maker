@@ -237,7 +237,7 @@ angular.module("templateMaker")
     var loops = str.match(/repeat:\s{0,4}`((\n|.*)*)\`/gmi);
     if(loops && loops.length>0){
       for(var i = 0; i<loops.length; i++){
-        str = str.replace(loops[i], loops[i].replace(new RegExp("{{|}}", "g"), "##"));
+        str = str.replace(loops[i], loops[i].replace(new RegExp("{{|}}", "g"), "~~"));
       }
 
     }
@@ -265,13 +265,13 @@ angular.module("templateMaker")
     var output = {};
     output.fields = [];
     if(content.length>0){
-      output.content = content[0].replace(/^`((\n|.*)*)`$/gm, "$1");
+      output.content = content[0].replace(/^`((\s|\n|.*)*)`$/gm, "$1");
       //find fields in the repeat string
-      var fields = output.content.match(/\#\#(.*?)\#\#/g);
+      var fields = output.content.match(/~~(.*?)~~/g);
       var fieldObjs = [];
       if(fields.length>0){
         for(var i=0; i<fields.length; i++){
-          var f = self.getFieldFromRaw(fields[i].replace(/\#\#/g,""), false);
+          var f = self.getFieldFromRaw(fields[i].replace(/~~/g,""), false);
           f.data_replace = [fields[i], f.hasOwnProperty("format") ? {format: f.format} : {}];
           output.fields.push(f);
         }

@@ -1,6 +1,6 @@
 
 
 <ul tpl-if="webinar_agenda_bullets">
-{{ webinar_agenda_bullets | repeat: `
+{{ webinar_agenda_bullets_1 | repeat: `
   <li>{{bullet_text | length: 128}} {{bullet_length}}</li>
 ` }}</ul>
