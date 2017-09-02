@@ -13,7 +13,88 @@ angular.module("templateMaker").directive('uiPopup', ["$timeout", function($time
       });
     }
   };
+}]).directive('uiSwitch', ["$timeout", function($timeout){
+  return {
+    restrict: "A",
+    link: function(scope, el, attr){
+      $timeout(function(){
+        console.log(scope,el,attr);
+        jQuery(el).checkbox({
+          onChecked: function() {
+            scope.$apply(function(){
+              scope.canLivePreview = true;
+            });
+          },
+          onUnchecked: function() {
+            scope.$apply(function(){
+              scope.canLivePreview = false;
+            });
+          }
+        });
+      });
+    }
+  };
 }]);
+
+angular.module('templateMaker').factory(
+  "$CryptoJS",
+  function $CryptoJS(){
+    return window.CryptoJS;
+  });
+
+angular.module('templateMaker').factory(
+  "$PersistJS",
+  function $PersistJS(){
+    var store = new window.Persist.Store('TemplateMaker');
+    window.addEventListener('unload', function(){
+      store.save();
+    });
+    return store;
+  });
+
+angular.module('templateMaker').factory(
+  "$UserManagement",
+  ['$CryptoJS','$PersistJS',function $UserManagement($CryptoJS, $PersistJS){
+
+    var self = this;
+    this.salt = "4f5ffc9746039bd823d0f05b0dbf4a66";
+    this.emailRegex = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    this.sessionIdLocalStorageKey = "TemplateMaker.emlUserID";
+
+    this.logOut = function(){
+      $PersistJS.remove(self.sessionIdLocalStorageKey);
+      this.sessionId = "";
+    };
+    this.hasSavedSessionId = function(){
+
+
+      var savedEmailId = $PersistJS.get(self.sessionIdLocalStorageKey);;
+      console.log(savedEmailId);
+      if(savedEmailId){
+        this.sessionId = savedEmailId;
+        return true;
+      } else {
+        this.sessionId = "";
+        return false;
+      }
+    };
+    this.setCurrentUser = function(email){
+      var hash = $CryptoJS.MD5(email + self.salt).toString();
+      $PersistJS.set(self.sessionIdLocalStorageKey, email);
+      window.ga('set', 'userId', hash);
+    };
+    this.isValidEmailAddress = function(email){
+      if(self.emailRegex.test(email)){
+        console.log(email, "is valid");
+        return true;
+      } else {
+        console.log(email, "is not valid");
+        return false;
+      }
+    };
+    return this;
+
+  }]);
 
 angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', function(TemplateFactory,saveAs){
   var self = this;
@@ -49,7 +130,7 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			reader.readAsBinaryString(files[i]);
 		};
 
-  
+
   this.exportDownloadSingleTemplate = function(file, $scope){
 		var reader = new FileReader();
 			reader.onloadend = function(evt){
@@ -84,6 +165,33 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			};
 			reader.readAsBinaryString(file);
 		};
+    this.exportLivePreview = function(file, $scope){
+  		var reader = new FileReader();
+  			reader.onloadend = function(evt){
+
+  				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
+          var data = self.removeTplIfs(data1, $scope.fields);
+
+  				setTimeout(function(){
+            if(self.livePreviewWindow === undefined){
+              //close and then reopen
+              //self.livePreviewWindow.close();
+              self.livePreviewWindow = window.open("about:blank", "template-live-preview");
+              window.onunload = function(){
+                self.livePreviewWindow.close();
+              };
+            } else {
+              //self.livePreviewWindow.location.href= "about:blank";
+            }
+
+            self.livePreviewWindow.document.innerHTML = "";
+  					self.livePreviewWindow.document.write(  data  );
+            self.livePreviewWindow.document.close();
+  				},500);
+
+  			};
+  			reader.readAsBinaryString(file);
+  		};
 	this.exportFields = function(fields){
 		//var data = JSON.stringify(fields);
     var output = {};
@@ -111,7 +219,7 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 }]);
 
 angular.module("templateMaker")
-.factory("$Fields", ['$filter', function $Fields($filter){
+.factory("$Fields", ['$filter','$PersistJS', function $Fields($filter, $PersistJS){
   var self = this;
   /*
   ------------------------------------
@@ -234,14 +342,18 @@ angular.module("templateMaker")
     // str.match()
 
     //replace loops with modified notation.
-    var loops = str.match(/repeat:\s{0,4}`((\n|.*)*)\`/gmi);
+    var loops = str.match(/repeat:\s{0,4}\`([^\`]*|[\s\S]*)\`/g);
     if(loops && loops.length>0){
+      var ori = "";
       for(var i = 0; i<loops.length; i++){
-        str = str.replace(loops[i], loops[i].replace(new RegExp("{{|}}", "g"), "~~"));
+        ori = loops[i];
+        loops[i] = loops[i].replace(new RegExp("\r?\n|\r", "g"),"");
+        loops[i] = loops[i].replace(new RegExp("{{|}}", "g"), "~~");
+        str = str.replace(new RegExp(ori, "g"), loops[i]);
+        console.log("%cREPEAT " + loops[i], "background-color:yellow");
       }
 
     }
-    console.log(str);
 
     return str;
   };
@@ -249,7 +361,7 @@ angular.module("templateMaker")
 
     var result = str.match(self.fieldPattern);
     if (result && result.length > 0) {
-      console.log("extracting fields",result.getUnique());
+      console.log("extracting fields ",result.getUnique());
       $.each(result.getUnique(), function(key,value){
         if(origin.indexOf(value) == -1){
           origin.push(value);
@@ -260,14 +372,15 @@ angular.module("templateMaker")
   };
 
   this.extractRepeatingField = function(raw){
-    var content = raw.match(/`((\n|.*)*)\`/igm);
-
+    var content = raw.match(/\`([^\`]*|[\s\S]*)\`/g);
+    console.log('repeatContent', content);
     var output = {};
     output.fields = [];
     if(content.length>0){
-      output.content = content[0].replace(/^`((\s|\n|.*)*)`$/gm, "$1");
+      output.content = content[0].replace(/^\`([^\`]*|[\s\S]*)\`$/g, "$1");
+      console.log('repleatField',output);
       //find fields in the repeat string
-      var fields = output.content.match(/~~(.*?)~~/g);
+      var fields = output.content.match(/~~([^~]*|[\s\S]*)~~/g);
       var fieldObjs = [];
       if(fields.length>0){
         for(var i=0; i<fields.length; i++){
@@ -292,7 +405,7 @@ angular.module("templateMaker")
       field.name = sections.shift().trim();
       //console.log(sections[0]);
       if(sections[0].trim().substr(0,6)=="repeat"){
-        console.log(raw);
+
         field.model = [];
         field.type="repeat";
         // field.content = ;
@@ -327,18 +440,18 @@ angular.module("templateMaker")
     }
     field.clean = field.name;
 
-    if(loadLocal && localStorage.getItem(field.name)){
+    if(loadLocal && $PersistJS.get(field.name)){
       if(field.type=="repeat"){
         try {
-          field.model = localStorage.getItem(field.name) ? JSON.parse(localStorage.getItem(field.name)) : [];
+          field.model = $PersistJS.get(field.name) ? JSON.parse($PersistJS.get(field.name)) : [];
         } catch (e) {
-          localStorage.setItem(field.name, JSON.stringify([]));
+          $PersistJS.set(field.name, JSON.stringify([]));
           field.model = [];
         } finally {
 
         }
       } else {
-        field.value = localStorage.getItem(field.name) ? unescape(localStorage.getItem(field.name)) : "";
+        field.value = $PersistJS.get(field.name) ? unescape($PersistJS.get(field.name)) : "";
         field.value = field.value.replace(/\/\/Q/g, '\"');
         field.model = field.value;
       }
@@ -358,7 +471,7 @@ angular.module("templateMaker")
           //["",""]
           section[1] = section[1].trim();
           section[1] = section[1].substr(1,section[1].length-2);
-          console.log(section[1]);
+
           field[e] = section[1];
         } else {
           field[e] = section[1].trim().replace(/^"(.*)"$/, "$1");
@@ -404,7 +517,7 @@ angular.module("templateMaker")
       self.foundFieldsProcessed[field.name].data_replace.push([raw, field.hasOwnProperty("format") ? {format: field.format} : {}]);
 
     });
-    console.log(self.foundFieldsProcessed);
+
 
     for(var i in self.foundFieldsProcessed){
       //console.log(items[i]);

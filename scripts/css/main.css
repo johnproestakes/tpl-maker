@@ -1,3 +1,37 @@
+@media screen and (max-width: 767px) {
+  .wide-view {
+    display: none !important; } }
+
+@media screen and (min-width: 767px) {
+  .narrow-view {
+    display: none !important; } }
+
+.truncate {
+  width: 100%;
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis; }
+
+.ui.vertical.menu {
+  width: 100%; }
+
+.ui.inverted.steps {
+  border-color: rgba(255, 255, 255, 0.35);
+  line-height: 1em; }
+  .ui.inverted.steps .step {
+    font-size: .8rem;
+    background-color: #1B1C1D !important;
+    color: #fff;
+    border-right: 1px solid rgba(255, 255, 255, 0.35); }
+  .ui.inverted.steps .disabled.step::after, .ui.inverted.steps .step::after {
+    background-color: #1B1C1D;
+    border-color: rgba(255, 255, 255, 0.35); }
+  .ui.inverted.steps .disabled.step {
+    color: rgba(255, 255, 255, 0.35) !important; }
+    .ui.inverted.steps .disabled.step .title {
+      color: rgba(255, 255, 255, 0.35) !important; }
+
 .time a {
   display: inline-block;
   padding: .5em; }
@@ -11,9 +45,9 @@
   margin-top: 1em;
   box-sizing: content-box; }
   .file-dropper.dragOver {
-    border: solid 3px #701a32;
-    color: #701a32;
-    background-color: rgba(112, 26, 50, 0.5); }
+    border: solid 3px #A333C8;
+    color: #A333C8;
+    background-color: rgba(163, 51, 200, 0.5); }
 
 .ui.fixed.container {
   position: fixed;
@@ -43,9 +77,9 @@ jupiter-draggable,
   position: absolute;
   left: -1px;
   bottom: .5em;
-  color: #701a32; }
+  color: #A333C8; }
   .close.link:hover {
-    color: #d64d73;
+    color: #daabe9;
     cursor: pointer; }
 
 .drag-handle {
@@ -56,7 +90,7 @@ jupiter-draggable,
   background: #eee;
   width: 1em; }
   .drag-handle:hover {
-    background-color: #701a32; }
+    background-color: #A333C8; }
 
 .additional-attr {
   padding: 1em;

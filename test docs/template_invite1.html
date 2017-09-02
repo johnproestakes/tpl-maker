@@ -15,24 +15,8 @@ Invite 1
 
 <ul tpl-if="webinar_agenda_bullets">
 {{ webinar_agenda_bullets | repeat: `
-  <li>## bullet_text | length: 128 ##</li>
+  <li>{{ bullet_text | length: 128 }}</li>
 ` }}</ul>
-
-
-<table>
-<thead><tr>
-  <th>Name</th>
-  <th>Title</th>
-  <th>Description</th>
-  </tr></thead>
-<tbody>
-{{ webinar_speakers | repeat: `
-  <tr>
-    <td>## speaker_name | length: 128 ##</td>
-    <td>##job_title | length: 128 ##</td>
-    <td>##description | length:128 ##</td>
-    </tr>
-` }}</tbody></table>
 
 
 <p><a href="{{webinar_room_direct_url | url }}">Attend webinar</a></p>

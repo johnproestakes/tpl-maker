@@ -1,5 +1,36 @@
 
-$accentColor: #701a32;
+$accentColor: #A333C8;
+@media screen and (max-width: 767px) {
+  .wide-view { display:none !important; }
+  // .narrow-view {display:block;}
+}
+@media screen and (min-width: 767px) {
+  .narrow-view {display:none !important;}
+  // .wide-view {}
+}
+.truncate {
+  width: 100%;
+  display:block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ui.vertical.menu {width: 100%;}
+.ui.inverted.steps {
+  border-color: rgba(255,255,255,.35);
+  line-height: 1em;
+  .step {
+    font-size:.8rem;
+    background-color: #1B1C1D !important; color: #fff;border-right: 1px solid rgba(255,255,255,.35) }
+  .disabled.step::after, .step::after{
+    background-color: #1B1C1D;
+    border-color: rgba(255,255,255,.35);
+  }
+  .disabled.step {
+    .title {color: rgba(255,255,255,.35) !important;}
+    color: rgba(255,255,255,.35) !important;}
+  // .disabled.step .content {color: rgba(255,255,255,.87) !important;}
+}
 
 
 .time {

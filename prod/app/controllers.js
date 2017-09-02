@@ -1,29 +1,90 @@
-angular.module("templateMaker").controller('MainController', [ "$scope", 'TemplateFactory','$Export','$Fields',
-function($scope, TemplateFactory, $Export,$Fields){
+angular.module("templateMaker").controller('MainController', [
+  "$scope",
+  'TemplateFactory',
+  '$Export',
+  '$Fields',
+  '$UserManagement','$PersistJS',
+function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
 
-
-  $scope.testField = {model: ""};
 
   $scope.blankSlate = function(){
     $scope.templateList=[];
     $scope.fields = [];
     $scope.exported = [];
     $scope.currentView = 1;
+    $scope.livePreview = "";
+    $scope.canLivePreview = false;
     location.href="#/main";
   };
 
   var debounce = null;
 
+  $scope.logOut = function(){
+    $scope.loginAsOther();
+    $scope.sessionUserEmail = "";
+    $UserManagement.logOut();
 
-  $scope.sessionCode = 0;
-  if($scope.sessionCode==0){
-    //set blank
-    location.href="#/main";
-    $scope.blankSlate();
-    $scope.sessionCode=1;
-  } else {
+    if(location.hasOwnProperty("reload")){
+      location.reload();
+    } else {
+      document.location.href = document.location.href;
 
-  }
+    }
+  };
+  $scope.loginAsOther = function(){
+    clearTimeout($scope.loginTimer);
+    delete $scope.loginTimer;
+  };
+
+  if($UserManagement.hasSavedSessionId()){
+    if($UserManagement.isValidEmailAddress($UserManagement.sessionId)) {
+      $scope.sessionUserEmail = $UserManagement.sessionId;
+      $scope.blankSlate();
+      location.href="#/login";
+      $scope.loginTimer = setTimeout(function(){
+          location.href="#/main";
+          $UserManagement.setCurrentUser($scope.sessionUserEmail);
+        }, 1000);
+      //autologin as xx
+    } else {
+      location.href="#/login";
+      $scope.sessionUserEmail = "";
+      }
+    } else {
+      location.href="#/login";
+      $scope.sessionUserEmail = "";
+    }
+
+    window.addEventListener('hashchange', function(){
+      if( $scope.sessionUserEmail == "" || !$UserManagement.hasSavedSessionId()) {
+        location.href="#/login";
+        //$scope.blankSlate();
+        // $scope.sessionToken = 1;
+      }
+    });
+
+
+  // Here are functions for the UI
+
+  $scope.sessionUpdateUserEmail = function(email){
+    $scope.errorMessage = "";
+
+    if($UserManagement.isValidEmailAddress(email)) {
+      $scope.sessionUserEmail = email;
+      $UserManagement.setCurrentUser(email);
+      $scope.blankSlate();
+      location.href = "#/main";
+    } else {
+      // Error message
+      $scope.errorMessage = "Sorry! You have to enter a valid email address.";
+    }
+  };
+  $scope.showNavBar = function(){
+    if(location.hash == '#/login') return false;
+    else return true;
+  };
+
+
 
   $scope.isLoading = false;
   $scope.navigateTo = function(n){
@@ -96,14 +157,33 @@ function($scope, TemplateFactory, $Export,$Fields){
 		return $scope.templateList && $scope.templateList.length>0;
 		};
 
+
+  $scope.setLivePreviewTemplate = function(key){
+    $scope.livePreview = key;
+    // console.log($scope.livePreview);
+    $scope.livePreviewName = $scope.templateList[key].name;
+    // console.log($scope.templateList[key].name);
+  };
 	$scope.updateFieldValue = function (field, value){
 		clearTimeout(debounce);
 		debounce = setTimeout(function(){
       $scope.$apply(function(){
+        // $scope.livePreview = "";
         for(var i = 0; i<$scope.fields.length; i++){
           if(!$scope.fields[i].hasOwnProperty("value")) $scope.fields[i].value = "";
           $scope.fields[i].value = $scope.fields[i].model;
-          localStorage.setItem($scope.fields[i].name, $scope.fields[i].value);
+          $PersistJS.set($scope.fields[i].name, $scope.fields[i].value);
+          console.log($scope.canLivePreview, $scope.livePreview);
+
+          if(!$scope.canLivePreview && $scope.livePreview!==""){
+            console.log($scope.templateList[$scope.livePreview]);
+            $Export.exportLivePreview($scope.templateList[$scope.livePreview],$scope);
+            //$scope.livePreviewWindow.document.innerHTML = "";
+            //$scope.livePreviewWindow.document.write("hiwwww");
+            console.log("do live preview");
+          }
+
+
         }
       });
 

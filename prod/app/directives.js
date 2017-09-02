@@ -125,6 +125,22 @@ angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeo
   };
 }]);
 
+angular.module('templateMaker').directive('uiDropdown', ['$timeout',function($timeout){
+  return {
+    restrict: "A",
+    link: function(scope,el,attr){
+      $timeout(function(){
+        $(el).dropdown();
+
+
+        scope.$on("$destroy", function(){
+          $(el).dropdown("destroy");
+        });
+      });
+    }
+  };
+}]);
+
 angular.module('templateMaker')
 .directive('fileDropper', ['$timeout', function($timeout){
 	return {
@@ -174,17 +190,16 @@ angular.module('templateMaker')
   return {
     restrict: "E",
     template: [
-      "<div style=\"padding-top: 1.5em;\">",
-      "<div class=\"ui fluid ordered steps\">",
+      "<div>",
+      "<div class=\"ui inverted fluid ordered steps\">",
         "<div class=\"step\" ng-click=\"navigateTo('#/main')\" ng-class=\"{completed: templateList.length>0}\">",
           "<div class=\"content\">",
-            "<div class=\"title\">Templates <span class=\"ui label\" ng-if=\"templateList.length>0\">{{templateList.length}}</span></div>",
+            "<div class=\"title\">Templates</div>",
             "</div>",
           "</div>",
         "<div class=\"step\" ng-click=\"templateLoaded()&&navigateTo('#/fields')\" ng-class=\"{completed:areAllFieldsCompleted(), disabled: !templateLoaded()}\">",
           "<div class=\"content\">",
-            "<div class=\"title\">Fields ",
-              "<span class=\"ui label\" ng-if=\"fields.length>0\">{{fields.length}}</span></div>",
+            "<div class=\"title\">Fields</div>",
             "</div>",
           "</div>",
         "<div class=\"step\" ng-click=\"areAllFieldsCompleted()&&navigateTo('#/export')\" ng-class=\"{disabled: !areAllFieldsCompleted()}\">",
@@ -199,16 +214,20 @@ angular.module('templateMaker')
 }]);
 
 angular.module('templateMaker')
-.directive('tplRepeat', ['$timeout',function($timeout){
+.directive('tplRepeat', ['$timeout','$PersistJS','$Export',
+function($timeout,$PersistJS,$Export){
   return {
     restrict: "E",
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
         "<p ng-if=\"field.instructions\">{{field.instructions}}</p>",
+
       "<div class=\"ui segment\">",
         "<jupiter-draggable class=\"draggable repeat\" drag-parent=\"field.model\" drag-index=\"$$index\" drag-item=\"field.model[$$index]\" ondragstart=\"jupiterDragStart(event)\" draggable=\"true\" ng-repeat=\"row in field.model track by $index\" ng-init=\"$$index = $index\" >",
           "<span class=\"close link\" ng-click=\"removeRow($index)\"><i class=\"close icon\"></i></span>",
           "<div ng-hide=\"field.model.length<=1\" jupiter-drag-handle class=\"drag-handle\"></div>",
+          "<div ng-click=\"setVisible($index)\" class=\"cursor:hand;\"><i class=\"chevron\" ng-class=\"{'down icon': visible==$index, 'right icon': visible!==$index}\"></i><span class=\"ui header\" style=\"margin:0\">Item {{$index + 1}}</span></div>",
+          "<div ng-show=\"$index==visible\" class=\"containedFields\">",
           "<div ng-repeat=\"col in field.fields\" class=\"ui field\">",
             "<label>{{col.label ? col.label : col.name }}</label>",
               "<p ng-if=\"col.instructions\">{{col.instructions}}</p>",
@@ -218,18 +237,26 @@ angular.module('templateMaker')
               "<tpl-time ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='time'\"></tpl-time>",
               "<tpl-url ng-model=\"field.model[$$index][col.name]\" field=\"col\" ng-change=\"updateField()\" ng-if=\"col.type=='url'\"></tpl-url>",
 
-            "</div>",
+            "</div></div>",
           "</jupiter-draggable>",
         "<div><button class=\"ui button\" ng-click=\"addRow()\">Add item</button></div>",
       "</div>"
     ].join(""),
     link: function(scope, el, attr){
+
+      scope.visible = 0;
+      scope.setVisible = function(id){
+        scope.visible = id;
+      };
       scope.removeRow = function(id){
         scope.ngModel.splice(id,1);
         scope.saveFields();
       };
       scope.saveFields = function(){
-        localStorage.setItem(scope.field.name, JSON.stringify(scope.ngModel));
+        if(scope.$parent.livePreview !== ""){
+          $Export.exportLivePreview(scope.$parent.templateList[0], scope.$parent);
+        }
+        $PersistJS.set(scope.field.name, JSON.stringify(scope.ngModel));
       };
       scope.updateField = function(){
         // console.log(value);
@@ -246,9 +273,11 @@ angular.module('templateMaker')
           if(scope.ngModel === null) scope.ngModel = [];
           if(typeof scope.ngModel === 'string' ) scope.ngModel = [];
           var output = {};
+          console.log(scope.field);
           scope.field.fields.forEach(function(f){
             output[f.name] = "";
           });
+          scope.visible = scope.ngModel.length;
           scope.ngModel.push(output);
           scope.saveFields();
         // });

@@ -6,12 +6,17 @@
 <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
 <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
 <link rel="icon" type="image/png" href="assets/logo.png" />
+
+
 <!-- css -->
 <link href="scripts/css/styles.css" rel="stylesheet" type="text/css"/>
 <link href="scripts/css/main.css" rel="stylesheet" type="text/css"/>
 <link href="scripts/css/libs/semantic.min.css" rel="stylesheet" type="text/css"/>
 
 <!-- libraries -->
+<script src="scripts/js/libs/md5.js" type="text/javascript"></script>
+<script src="scripts/js/libs/persistjs-min.js" type="text/javascript"></script>
+
 <script type="text/javascript" src="scripts/js/custom.js"></script>
 <script type="text/javascript" src="scripts/js/libs/jquery.min.js"></script>
 <script type="text/javascript" src="scripts/js/libs/angular.min.js"></script>
@@ -28,21 +33,42 @@
 </head>
 
 <body>
-  <div ng-app="templateMaker" ng-controller="MainController">
-    <div class="ui fixed inverted top menu">
+  <div ng-app="templateMaker" ng-controller="MainController" id="app_body">
+    <div class="ui fixed inverted top menu" ng-if="showNavBar()">
       <div class="ui container">
         <div class="item"><img src="assets/logo.png"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
         <a href="javascript:angular.noop()" ng-click="blankSlate()" class="item">New Workspace</a>
         <div class="right menu">
-          <a href="#/build-tag" class="item">Tag Builder</a>
-          <a href="#/help" class="item">Help?</a>
+          <div class="narrow-view ui pointing dropdown item" ui-dropdown>
+            <i class="content icon"></i>
+            <div class="menu">
+            <div class="item" ng-click="navigateTo('#/main')">Templates</div>
+            <div class="item" ng-click="templateLoaded()&&navigateTo('#/fields')">Fields</div>
+            <div class="item" ng-click="areAllFieldsCompleted()&&navigateTo('#/export')">Export</div>
+            </div>
+          </div>
+          <div class="item wide-view" style="padding:.5em .5em">
+            <magic-header></magic-header>
+          </div>
+          <div class="ui pointing dropdown item" ui-dropdown>
+            <span class="truncate" style="width:7em;">{{sessionUserEmail}}</span>
+             <i class="dropdown icon"></i>
+            <div class="menu">
+              <a href="#/build-tag" class="item">Tag Builder</a>
+              <a href="#/help" class="item">Help?</a>
+              <div class="divider"></div>
+              <div class="item" ng-click="logOut()">Log out</div>
+
+              </div>
+            </div>
+
           </div>
         </div>
       </div>
-      <div style="height: 50px;"></div>
+      <div style="height: 75px;" ng-if="showNavBar()"></div>
 
       <br>
-    <section class="ui container" ng-view></section>
+    <section class="ui container" ng-view style="height:100%;"></section>
     </div>
 </body>
 
@@ -67,10 +93,7 @@
       window.onhashchange = locationHashChanged;
   }
 
-  (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-  (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-  m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-  })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
 
   if(location.href.indexOf("localhost")>-1){
     window.ga = function(args){
@@ -80,6 +103,11 @@
       }
       console.log("%c GOOGLE ANALYTICS [DEBUG]: "+ output.join(", "), "background-color:lime");
     };
+  } else {
+    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
   }
 
 
