@@ -388,7 +388,7 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
       // scope.
 
       scope.getTimezones = function(){
-        return ["EST", "CST", "MST", "PST"];
+        return ["EST", "ET", "CST", "MST", "PST"];
       };
       scope.hourOptions = [];
       scope.timezoneOptions = scope.getTimezones();

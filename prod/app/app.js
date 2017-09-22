@@ -228,12 +228,18 @@ angular.module("templateMaker")
     if(self.fieldTypes[type] === undefined) return false;
     else return true;
   };
+  // this.encodeURI = function(){};
   this.fieldTypes = {
       "text": {
         label:"Text",
         parameters: ["length", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
-          return field.value;
+          // console.log(field, replaceAttr, value);
+          var output = field.value;
+          if(replaceAttr.format && replaceAttr.format == "uriencode"){
+             output = encodeURIComponent(field.value);
+          }
+          return output;
         }
       },
 
@@ -241,7 +247,7 @@ angular.module("templateMaker")
         label:"Date Picker",
         parameters: ["dateFormat", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
-          console.log(field, replaceAttr,value);
+          console.log(field, replaceAttr, value);
           var date = field.value.split("-");
       		var date_js = new Date(date[0], (date[1]*1)-1, date[2]);
       		var date_replace = $filter('date')(date_js, replaceAttr== {} ? "longDate" : replaceAttr.format);
@@ -256,12 +262,24 @@ angular.module("templateMaker")
           // 00:00 AM PST
           var clock = field.value.split(" ");
           var time = clock[0].split(":");
-      		var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ? time[0]*1 + 12 : time[0]*1 ), time[1]*1, 0, 0);
+          var format = replaceAttr.format === undefined || replaceAttr.format=="" ? "shortTime" : replaceAttr.format;
+          var originFormat = format;
+          if(originFormat=="UTC"){
+            console.log('time', (clock[1]=="PM" ? (time[0]*1 == 12 ? 12 : time[0]*1 + 12 )  : time[0]*1 ));
+            var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ?(time[0]*1 == 12 ? 12 : time[0]*1 + 12 ) : time[0]*1 )+4, time[1]*1, 0, 0);
+          } else {
+            var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ? (time[0]*1 == 12 ? 12 : time[0]*1 + 12 ): time[0]*1 ), time[1]*1, 0, 0);
+
+          }
+
+
 
           //add custom filter for timezone.
           //console.log(time);
 
-          var format = replaceAttr.format === undefined || replaceAttr.format=="" ? "shortTime" : replaceAttr.format;
+
+          format = (format=="UTC") ? "'T'HHmmss'Z'" : format;
+
 
           format = (format=="shortTime+ZZZ") ? "h:mm '"+clock[1]+"' ZZZ" : format;
           format = (format=="shortTime") ? "h:mm '"+clock[1]+"'" : format;
@@ -271,7 +289,12 @@ angular.module("templateMaker")
 
           format = format.replace(new RegExp("ZZZ", "g"), "'"+clock[2]+"'");
 
-      		var time_replace = $filter('date')(time_js, format);
+          if(originFormat=="UTC"){
+            var time_replace = $filter('date')(time_js, format);
+          } else {
+            var time_replace = $filter('date')(time_js, format);
+          }
+
           console.log(time_replace);
           return time_replace;
         }
