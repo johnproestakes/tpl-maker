@@ -329,52 +329,66 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
     scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
     template: [
 
-      "<div class=\"ui action input\">",
+      "<div class=\"ui grid\">",
 
+      "<div class=\"four wide column\">",
       "<input type=\"hidden\" ng-model=\"ngModel\">",
-        "<select class=\"ui compact selection dropdown\" ng-model=\"time\" ng-change=\"updateFieldValues()\">",
-          "<option ng-repeat=\"hour in hourOptions track by $index\">{{hour}}</option>",
-          "</select>",
+        "<div class=\"ui basic compact buttons\">",
+        "<div class=\"ui scrolling dropdown button\" ui-dropdown>",
+        "{{hour}}<i class=\"dropdown icon\"></i>",
+        "<div class=\"menu\" >",
+          "<div class=\"item\" ng-click=\"setHour(hour)\" ng-repeat=\"hour in hourOptions track by $index\">{{hour}}</div>",
+          "</div>",
+          "</div>",
+          "<div class=\"ui scrolling dropdown button\" ui-dropdown>",
+          "{{minute}}<i class=\"dropdown icon\"></i>",
+          "<div class=\"menu\" >",
+            "<div class=\"item\" ng-click=\"setMinutes(minute)\" ng-repeat=\"minute in minuteOptions track by $index\">{{minute}}</div>",
+            "</div>",
+            "</div>",
 
-      "<select class=\"ui compact selection dropdown\" ng-model=\"timezone\" ng-change=\"updateFieldValues()\">",
-        "<option ng-repeat=\"timezone in timezoneOptions track by $index\">{{timezone}}</option>",
-        "</select>",
+"</div>",
+          "</div>",
+          "<div class=\"three wide column\" style=\"padding-top:1.5em\">",
+          "<div class=\"inline fields\">",
+          "<div class=\"field\">",
+            "<div class=\"ui radio checkbox\">",
+              "<input type=\"radio\" ng-model=\"timeParts.p\" value=\"AM\"  tabindex=\"0\" >",
+                "<label>AM</label>",
+                "</div>",
+                "</div>",
+                "<div class=\"ui radio checkbox\">",
+                  "<input type=\"radio\" ng-model=\"timeParts.p\" value=\"PM\" tabindex=\"0\">",
+                    "<label>PM</label>",
+                    "</div>",
+                  "</div>",
+                "</div>",
 
-
+      "<div class=\"five wide column\">",
+      "<div class=\"ui compact basic scrolling dropdown button\" ui-dropdown>",
+      "{{timezones[timeParts.t]}} <i class=\"dropdown icon\"></i>",
+      "<div class=\"menu\">",
+        "<div class=\"item\" ng-repeat=\"(key,value) in timezones track by $index\" ng-click=\"setTimezone(key)\">{{value}}</div>",
+        "</div>",
       "</div>",
-
-
-
-
-      // "<div class=\"ui time popup\" style=\"width:400px\">",
-      //   "<div class=\"ui grid\">",
-      //   "<div class=\"six wide column\">",
-      //     "<a class=\"hour\" href=\"javascript:angular.noop()\" ng-repeat=\"item in hourOptions\">{{item.label}}</a>",
-      //   "</div>",
-      //   "<div class=\"five wide column\">",
-      //     "<a href=\"#\" ng-repeat=\"item in timezoneOptions\">{{item}}</a>",,
-      //   "</div>",
-      //   "</div>",
-      // "</div>"
+      "</div>"
     ].join(""),
     link: function(scope, el, attr){
 
       scope.timeParts = {
-        h: 0,
-        m: 0,
-        p: "AM",
-        t: 0
+        h: 12,
+        m: "00",
+        p: "PM",
+        t: "EST"
       };
       var regex = /([0-9]{1,2})\:([0-9]{2}) (\A\M|\P\M) ([A-Z]{3})?/g;
       var b = scope.ngModel.match(regex);
-
-
 
       if(b) {
         var match = regex.exec(scope.ngModel);
         console.log(match);
         scope.timeParts.h = match[1]*1;
-        scope.timeParts.m = match[2]*1;
+        scope.timeParts.m = match[2];
         scope.timeParts.p = match[3];
         if(match[4] !== null)
           scope.timeParts.t = match[4];
@@ -385,58 +399,92 @@ angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeo
         // scope.day = new Date().getDate();
         // scope.month = new Date().getMonth();
       }
-      // scope.
 
+      scope.setMinutes = function(min){
+          scope.timeParts.m = min;
+          scope.minute = scope.timeParts.m;
+          scope.updateFieldValues();
+          console.log(min);
+      };
+      scope.setHour = function(hour){
+          scope.timeParts.h = (scope.timeParts.p == "PM") ? hour*1 + 12 : hour*1;
+          scope.hour = hour;
+          scope.updateFieldValues();
+      };
+
+      scope.setTimezone = function(timezone){
+        scope.timeParts.t = timezone;
+        scope.updateFieldValues();
+      };
+      scope.timezones = {
+        "EST":"Eastern Standard Time (EST)",
+        "EDT":"Eastern Daylight Time (EDT)",
+        "ET":"Eastern Time (ET)",
+        "CST":"Central Standard Time (CST)",
+        "MST":"Mountain Standard Time (MST)",
+        "PST":"Pacific Standard Time (CST)"
+      };
       scope.getTimezones = function(){
-        return ["EST", "ET", "CST", "MST", "PST"];
+        var output = [];
+        for(i in scope.timezones){
+          if(scope.timezones.hasOwnProperty(i)){
+
+          }
+        }
+        return ["EST","EDT", "ET", "CST", "MST", "PST"];
       };
       scope.hourOptions = [];
+      scope.minuteOptions = [];
       scope.timezoneOptions = scope.getTimezones();
 
       scope.updateFieldValues = function(){
-        scope.ngModel = (scope.time === undefined ? "12:00 AM" : scope.time) + " " + (scope.timezone===undefined ? "EST" : scope.timezone);
+        scope.ngModel = (scope.timeParts.h > 13 ? scope.timeParts.h*1 - 12 : scope.timeParts.h*1) + ":"+scope.timeParts.m+" "+scope.timeParts.p + " " + (scope.timezone===undefined ? "EST" : scope.timezone);
+        console.log(scope.ngModel);
         scope.ngChange();
       };
 
       scope.getHours = function(){
         var output = [];
-        for(i=0; i<=23; i++){
+        for(i=1; i<=12; i++){
+          output.push(i);
+        }
+          return output;
 
-
-          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":00 " + (i>=12 ? "PM" : "AM" ));
-          output.push( (i==0 ? "12" : (i>12 ? i-12 : i ) ) + ":30 " + (i>=12 ? "PM" : "AM" ));
-
+      };
+      scope.getMinutes = function(){
+        var output = [];
+        output.push("00");
+        for(i=1; i<4; i++){
+          output.push(i*15);
         }
           return output;
 
       };
       scope.hourOptions = scope.getHours();
+      scope.minuteOptions = scope.getMinutes();
 
       $timeout(function(){
+        scope.updateFieldValues();
+        // if(/[0-9]{1,2}:[0-9]{1,2}\s(AM|PM)\s[A-Z]{3}/.test(scope.ngModel)){
+        //   var time_js = scope.ngModel.split(" ");
+        //   scope.timeParts.h = time_js[0].split(":").shift();
+        //   scope.timeParts.m = time_js[0].split(":").pop();
+        //   scope.timeParts.p = time_js[1];
+        //
+        //   scope.updateFieldValues();
+        //   scope.time = time_js[0] + " " + time_js[1];
+        //   scope.timezone = time_js[2];
+        // } else {
+        //   scope.$apply(function(){
+        //     scope.time = "12:00 PM";
+        //     scope.timezone = "EST";
+        //   });
+        //
+        // }
 
-        if(/[0-9]{1,2}:[0-9]{1,2}\s(AM|PM)\s[A-Z]{3}/.test(scope.ngModel)){
-          var time_js = scope.ngModel.split(" ");
-          scope.time = time_js[0] + " " + time_js[1];
-          scope.timezone = time_js[2];
-        } else {
-          scope.$apply(function(){
-            scope.time = "12:00 PM";
-            scope.timezone = "EST";
-          });
+        scope.hour = scope.timeParts.h > 12 ? scope.timeParts.h - 12 : scope.timeParts.h;
+        scope.minute = scope.timeParts.m;
 
-        }
-        var popup = jQuery(el).find('.ui.popup');
-        jQuery(el).find('input').popup({
-          on: "click",
-          boundary: document.body,
-          jitter: 50,
-          position: 'bottom left',
-          closable: false,
-          popup: popup
-        });
-
-
-        console.log("tpl-textbox");
       });
     }
   };

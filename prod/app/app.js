@@ -224,21 +224,35 @@ angular.module("templateMaker")
   /*
   ------------------------------------
     allow only these field types */
+
+  var FieldAttributeFormat;
+  (function (FieldAttributeFormat) {
+      FieldAttributeFormat[FieldAttributeFormat["Boolean"] = 0] = "Boolean";
+      FieldAttributeFormat[FieldAttributeFormat["Text"] = 1] = "Text";
+      FieldAttributeFormat[FieldAttributeFormat["Numerical"] = 2] = "Numerical";
+  })(FieldAttributeFormat || (FieldAttributeFormat = {}));
+
   this.typeExists = function(type){
     if(self.fieldTypes[type] === undefined) return false;
     else return true;
   };
   // this.encodeURI = function(){};
+  this.foundFields = [];
+  this.foundFieldsProcessed = {};
+  this.fieldPattern = /{{((\n|.)*?)}}/gi;
   this.fieldTypes = {
       "text": {
         label:"Text",
-        parameters: ["length", "instructions", "required", "label"],
+        parameters: ["length", "instructions", "required", "label","default"],
         renderField: function(field, replaceAttr, value){
           // console.log(field, replaceAttr, value);
           var output = field.value;
           if(replaceAttr.format && replaceAttr.format == "uriencode"){
              output = encodeURIComponent(field.value);
           }
+          // console.log(field.data_replace);
+          // console.log(field.name, self.getFieldParameters(field.data_replace[0][0]));
+
           return output;
         }
       },
@@ -269,7 +283,6 @@ angular.module("templateMaker")
             var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ?(time[0]*1 == 12 ? 12 : time[0]*1 + 12 ) : time[0]*1 )+4, time[1]*1, 0, 0);
           } else {
             var time_js = new Date(2017, 1, 1, (clock[1]=="PM" ? (time[0]*1 == 12 ? 12 : time[0]*1 + 12 ): time[0]*1 ), time[1]*1, 0, 0);
-
           }
 
 
@@ -308,10 +321,18 @@ angular.module("templateMaker")
       },
       "url" : {
         label:"URL",
+        actions: ["setQueryParam"],
         parameters: ["length", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
-          //do i validate the url? probably not.
-          return field.value;
+          
+          var output = field.value;
+          var fieldProps = self.getFieldParameters(field.data_replace[0][0]);
+
+          if(replaceAttr.format && replaceAttr.format == "uriencode"){
+             output = encodeURIComponent(field.value);
+          }
+
+          return output;
         }
       },
 
@@ -349,15 +370,14 @@ angular.module("templateMaker")
       }// "time"
     };
   this.fieldAttr = {
-      "length":"=",
-      "required":"+",
-      "instructions":"",
-      "label":"",
-      "delimiter":""
+      "default": FieldAttributeFormat.Text,
+      "length": FieldAttributeFormat.Numerical,
+      "required": FieldAttributeFormat.Boolean,
+      "instructions": FieldAttributeFormat.Text,
+      "label": FieldAttributeFormat.Text,
+      "delimiter": FieldAttributeFormat.Text
     };
-  this.foundFields = [];
-  this.foundFieldsProcessed = {};
-  this.fieldPattern = /{{((\n|.)*?)}}/gi;
+
 
   this.finalizeHtml = function(str){
     //find the repeat fields.
@@ -417,25 +437,36 @@ angular.module("templateMaker")
 
     return output;
   };
+  this.getFieldParameters = function(raw){
+
+    if(typeof raw ==="array") { raw = raw[0]; }
+    console.log(raw);
+    var fieldAttr = ((raw.replace(/{{/g, "")).replace(/}}/g, "")).trim().split("|");
+    fieldAttr = fieldAttr.map(function(item){return item.trim();});
+    var fieldName = fieldAttr.shift().trim();
+    var fieldActions = [];
+    return {name: fieldName, attr: fieldAttr, actions: fieldActions };
+
+  };
   this.getFieldFromRaw = function(raw, loadLocal){
     if(loadLocal === null) loadLocal = true;
 
     var field = { model:"", value:"", type:"text" };
-    field.name = ((raw.replace(/{{/g, "")).replace(/}}/g, "")).trim();
+    var fieldProps = self.getFieldParameters(raw);
+    field.name = fieldProps.name;
 
-    if(field.name.indexOf("|")>-1){
-      var sections = field.name.split("|");
-      field.name = sections.shift().trim();
-      //console.log(sections[0]);
+    if(fieldProps.attr.length>0){
+      var sections = fieldProps.attr;
       if(sections[0].trim().substr(0,6)=="repeat"){
-
         field.model = [];
         field.type="repeat";
         // field.content = ;
         var a = self.extractRepeatingField(raw);
         field.content = a.content;
         field.fields = a.fields;
-      } else {
+
+      } else { //not repeating
+
         sections.forEach(function(section){
           section = section.trim();
           if(section.indexOf(":")>-1){
@@ -463,6 +494,12 @@ angular.module("templateMaker")
     }
     field.clean = field.name;
 
+
+    if(field.default && field.default!=="") {
+      field.value = field.default;
+      field.model = field.default; }
+    console.log("GET RAW", field);
+
     if(loadLocal && $PersistJS.get(field.name)){
       if(field.type=="repeat"){
         try {
@@ -474,6 +511,7 @@ angular.module("templateMaker")
 
         }
       } else {
+
         field.value = $PersistJS.get(field.name) ? unescape($PersistJS.get(field.name)) : "";
         field.value = field.value.replace(/\/\/Q/g, '\"');
         field.model = field.value;
@@ -483,25 +521,33 @@ angular.module("templateMaker")
     return field;
   };
   this.extendAttrParameters = function(field, section){
-    console.log("building", field.name, section);
+
     for(var e in self.fieldAttr){
       if(self.fieldAttr.hasOwnProperty(e) && section[0]==e){
-        if(self.fieldAttr[e]=="="){
+
+        if(self.fieldAttr[e]==FieldAttributeFormat.Numerical){
           field[e] = section[1]*1;
-        } else if(self.fieldAttr[e]=="+"){
-          field[e] = true;
+
+        } else if(self.fieldAttr[e]==FieldAttributeFormat.Boolean){
+
+          if(!field[e])  { field[e] = true; }
+          else if(field[e]=="false") { field[e] = false; }
+
+        } else if (self.fieldAttr[e]==FieldAttributeFormat.Text){
+          field[e] = section[1].trim().replace(/^"(.*)"$/, "$1");
+
         } else if(self.fieldAttr[e]=="[]"){
-          //["",""]
           section[1] = section[1].trim();
           section[1] = section[1].substr(1,section[1].length-2);
-
           field[e] = section[1];
+
         } else {
-          field[e] = section[1].trim().replace(/^"(.*)"$/, "$1");
+          //something went wrong
         }
 
       }
     }
+    console.log("field", field);
     return field;
 
   };
@@ -537,7 +583,8 @@ angular.module("templateMaker")
       if(!self.foundFieldsProcessed[field.name].hasOwnProperty('data_replace')){
         self.foundFieldsProcessed[field.name]['data_replace'] = [];
       }
-      self.foundFieldsProcessed[field.name].data_replace.push([raw, field.hasOwnProperty("format") ? {format: field.format} : {}]);
+      actions = "";
+      self.foundFieldsProcessed[field.name].data_replace.push([raw, field.hasOwnProperty("format") ? {format: field.format} : {}, actions]);
 
     });
 
