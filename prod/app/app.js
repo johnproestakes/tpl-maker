@@ -52,6 +52,105 @@ angular.module('templateMaker').factory(
     return store;
   });
 
+angular.module("templateMaker")
+.factory('TemplateFactory',["saveAs","$Fields","$filter", function(saveAs, $Fields,$filter){
+	var TemplateFactory = this;
+
+  this.binaryFiles = [];
+	this.fields = [];
+
+	this.readFile = function(files, i, $scope){
+		var reader = new FileReader();
+			reader.onloadend = function(evt){
+
+				var binary = $Fields.prepareHtml(evt.target.result);
+				TemplateFactory.binaryFiles.push(binary);
+        TemplateFactory.fields = $Fields.extractFields(binary, TemplateFactory.fields);
+				if(i < files.length-1){
+					TemplateFactory.readFile(files,i+1, $scope);
+					} else {
+						$scope.$apply(function(){
+						$scope.fields = $Fields.processFields(TemplateFactory.fields);
+						});
+						}
+			};
+			reader.readAsBinaryString(files[i]);
+		};
+
+  this.extractAllFields = function(files,$scope){
+		var a = [];
+		TemplateFactory.fields =[];
+		TemplateFactory.binaryFiles =[];
+		return TemplateFactory.readFile(files, 0, $scope);
+		};
+	
+
+	this.updateFields = function(){ };
+
+
+	this.replaceCodeWith = function(data, find, replace){
+		return data;
+
+	};
+	this.generateTemplate = function(preview, fields){
+		var output = $Fields.prepareHtml(preview);
+		//ungroup the fields;
+		fields = $Fields.tranformFieldStructure(fields, "ungroup");
+		//newFields = [];
+		console.log(fields);
+
+			for(var f in fields){
+				if(fields.hasOwnProperty(f)){
+					if(fields[f].data_replace.length>0){
+						for(var i=0; i < fields[f]['data_replace'].length; i++){
+							//escape characters
+							var copy = fields[f].data_replace[i][0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
+
+							var str = new RegExp(copy, "g");
+
+
+							if($Fields.typeExists(fields[f].type)){
+								//extensible handler
+								var replaceStr = $Fields.fieldTypes[fields[f].type].renderField(fields[f], fields[f].data_replace[i][1]);
+								// returns value to be replaced
+
+								console.log("replacing ", str, "with", replaceStr);
+								output = output.replace(str, replaceStr);
+
+							} else {
+								//default handler
+								output = output.replace(str, fields[f].value);
+							}
+
+
+
+							// if(fields[f].type=="repeat"){
+							// 	//console.log("%cWe found a repeat field "+fields[f].name, "background:yellow");
+							//
+							//
+							//
+							//
+							// } else if(fields[f].type=="date") {
+							// 	var date = TemplateFactory.generateDateFromField(fields[f], fields[f].value, fields[f].data_replace[i][1]);
+							// 	output = output.replace(str, date);
+							// } else {
+							// 	output = output.replace(str, fields[f].value);
+							// }
+
+						}
+					}
+				}
+			}
+			//do stuff to output for tpl-ifs
+
+
+			return output;
+		};
+
+
+  return TemplateFactory;
+	}]);
+
 angular.module('templateMaker').factory(
   "$UserManagement",
   ['$CryptoJS','$PersistJS',function $UserManagement($CryptoJS, $PersistJS){
@@ -96,12 +195,15 @@ angular.module('templateMaker').factory(
 
   }]);
 
-angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', function(TemplateFactory,saveAs){
+angular.module('templateMaker').factory('$Export', [
+  'TemplateFactory','saveAs','$Fields', function(TemplateFactory,saveAs,$Fields){
   var self = this;
 
   this.previewWindow = null;
-  this.removeTplIfs = function(data, fields){
-    //if(data.indexOf("–")) { data = data.replace("–", "&mdash;");}
+  this.finalizeExportedHTML = function(data, fields){
+    data = data.replace(/\<!\-\-(\s)?(template_maker|templatemaker)([^\-\-\>]*|[\s\S]*)--\>/ig,"");
+    //shall we compress style tags?
+
     return data;
   };
   this.exportTemplate = function(files, i, $scope){
@@ -111,7 +213,7 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 				setTimeout(function(){
 				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
 
-        var data = self.removeTplIfs(data1, $scope.fields);
+        var data = self.finalizeExportedHTML(data1, $scope.fields);
 
 
 
@@ -136,7 +238,7 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			reader.onloadend = function(evt){
 				setTimeout(function(){
 				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
-        var data = self.removeTplIfs(data1, $scope.fields);
+        var data = self.finalizeExportedHTML(data1, $scope.fields);
 				self.downloadFile(data, "export_"+file.name);
 				}, 500);
 			};
@@ -147,7 +249,7 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			reader.onloadend = function(evt){
 
 				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
-        var data = self.removeTplIfs(data1, $scope.fields);
+        var data = self.finalizeExportedHTML(data1, $scope.fields);
 
 				setTimeout(function(){
           if(self.previewWindow !== null){
@@ -165,36 +267,11 @@ angular.module('templateMaker').factory('$Export', ['TemplateFactory','saveAs', 
 			};
 			reader.readAsBinaryString(file);
 		};
-    this.exportLivePreview = function(file, $scope){
-  		var reader = new FileReader();
-  			reader.onloadend = function(evt){
 
-  				var data1 = TemplateFactory.generateTemplate(evt.target.result, $scope.fields);
-          var data = self.removeTplIfs(data1, $scope.fields);
-
-  				setTimeout(function(){
-            if(self.livePreviewWindow === undefined){
-              //close and then reopen
-              //self.livePreviewWindow.close();
-              self.livePreviewWindow = window.open("about:blank", "template-live-preview");
-              window.onunload = function(){
-                self.livePreviewWindow.close();
-              };
-            } else {
-              //self.livePreviewWindow.location.href= "about:blank";
-            }
-
-            self.livePreviewWindow.document.innerHTML = "";
-  					self.livePreviewWindow.document.write(  data  );
-            self.livePreviewWindow.document.close();
-  				},500);
-
-  			};
-  			reader.readAsBinaryString(file);
-  		};
 	this.exportFields = function(fields){
 		//var data = JSON.stringify(fields);
     var output = {};
+    fields = $Fields.tranformFieldStructure(fields, "ungroup");
     for (var n=0; n<fields.length; n++){
       if(fields[n].type=="repeat"){
         output[fields[n].name] = fields[n].model;
@@ -243,7 +320,7 @@ angular.module("templateMaker")
   this.fieldTypes = {
       "text": {
         label:"Text",
-        parameters: ["length", "instructions", "required", "label","default"],
+        parameters: ["group","length", "instructions", "required", "label","default"],
         renderField: function(field, replaceAttr, value){
           // console.log(field, replaceAttr, value);
           var output = field.value;
@@ -259,7 +336,7 @@ angular.module("templateMaker")
 
       "date": {
         label:"Date Picker",
-        parameters: ["dateFormat", "instructions", "required", "label"],
+        parameters: ["group","dateFormat", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
           console.log(field, replaceAttr, value);
           var date = field.value.split("-");
@@ -271,7 +348,7 @@ angular.module("templateMaker")
       },
       "time": {
         label:"Time Picker",
-        parameters: ["timeFormat", "instructions", "required", "label"],
+        parameters: ["group","timeFormat", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
           // 00:00 AM PST
           var clock = field.value.split(" ");
@@ -314,7 +391,7 @@ angular.module("templateMaker")
       },
       "textarea": {
         label:"Long Text",
-        parameters: ["length", "instructions", "required", "label"],
+        parameters: ["group","length", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
           return field.value;
         }
@@ -322,9 +399,9 @@ angular.module("templateMaker")
       "url" : {
         label:"URL",
         actions: ["setQueryParam"],
-        parameters: ["length", "instructions", "required", "label"],
+        parameters: ["group","length", "instructions", "required", "label"],
         renderField: function(field, replaceAttr, value){
-          
+
           var output = field.value;
           var fieldProps = self.getFieldParameters(field.data_replace[0][0]);
 
@@ -338,7 +415,7 @@ angular.module("templateMaker")
 
       "repeat" : {
         label:"Repeating Block",
-        parameters: ["label"],
+        parameters: ["group", "label"],
         renderField: function(field, replaceAttr, value){
           var content = [];
           for(row = 0; row<field.model.length; row++){
@@ -370,6 +447,7 @@ angular.module("templateMaker")
       }// "time"
     };
   this.fieldAttr = {
+      "group":FieldAttributeFormat.Text,
       "default": FieldAttributeFormat.Text,
       "length": FieldAttributeFormat.Numerical,
       "required": FieldAttributeFormat.Boolean,
@@ -379,11 +457,9 @@ angular.module("templateMaker")
     };
 
 
-  this.finalizeHtml = function(str){
-    //find the repeat fields.
-    /// replace them with ##'s for later processing.
-    // str.match()
 
+  this.prepareHtml = function(str){
+    //happens before html is read.
     //replace loops with modified notation.
     var loops = str.match(/repeat:\s{0,4}\`([^\`]*|[\s\S]*)\`/g);
     if(loops && loops.length>0){
@@ -398,8 +474,11 @@ angular.module("templateMaker")
 
     }
 
+
+
     return str;
   };
+
   this.extractFields = function(str, origin){
 
     var result = str.match(self.fieldPattern);
@@ -437,6 +516,7 @@ angular.module("templateMaker")
 
     return output;
   };
+
   this.getFieldParameters = function(raw){
 
     if(typeof raw ==="array") { raw = raw[0]; }
@@ -567,9 +647,41 @@ angular.module("templateMaker")
     return output;
   };
 
+  this.tranformFieldStructure = function(fields, method){
+    if(method == "ungroup"){
+      var output = [];
+  		for(var i in fields ){
+  			if(fields.hasOwnProperty(i)){
+  				for(y=0;y<fields[i].length;y++){
+  					output.push(fields[i][y]);
+  				}
+  			}
+  		}
+    } else {
+      var output = {"ungrouped": []};
+      for(var i in fields){
+        //console.log(items[i]);
+        if(fields.hasOwnProperty(i)){
+          if(!fields[i].group || fields[i].group==""){
+            output["ungrouped"].push(fields[i]);
+          } else {
+            if(output[fields[i].group]===undefined){
+              output[fields[i].group]=[];
+            }
+            output[fields[i].group].push(fields[i]);
+          }
+        }
+      }
+    }
+    return output;
+  }
+
   this.processFields = function(fields){
-    var output = [];
+
 	  // fields.sort();
+    // export with groupings.
+
+    //nees to have default group for ungrouped.
 
     self.foundFields = fields.getUnique();
     //process found fields
@@ -589,15 +701,11 @@ angular.module("templateMaker")
     });
 
 
-    for(var i in self.foundFieldsProcessed){
-      //console.log(items[i]);
-      if(self.foundFieldsProcessed.hasOwnProperty(i)){
-        output.push(self.foundFieldsProcessed[i]);
-        }
-      }
+    var output = self.tranformFieldStructure(self.foundFieldsProcessed, "group");
     //clear out fields
     self.foundFields = [];
     self.foundFieldsProcessed = [];
+    // console.log("processing fields?", output);
 		return output;
   };
 
@@ -613,103 +721,3 @@ angular.module('templateMaker').factory(
   return window.saveAs;
   }
 );
-
-angular.module("templateMaker")
-.factory('TemplateFactory',["saveAs","$Fields","$filter", function(saveAs, $Fields,$filter){
-	var TemplateFactory = this;
-
-  this.binaryFiles = [];
-	this.fields = [];
-
-	this.readFile = function(files, i, $scope){
-		var reader = new FileReader();
-			reader.onloadend = function(evt){
-
-				var binary = $Fields.finalizeHtml(evt.target.result);
-				TemplateFactory.binaryFiles.push(binary);
-        TemplateFactory.fields = $Fields.extractFields(binary, TemplateFactory.fields);
-				if(i < files.length-1){
-					TemplateFactory.readFile(files,i+1, $scope);
-					} else {
-						$scope.$apply(function(){
-						$scope.fields = $Fields.processFields(TemplateFactory.fields);
-						});
-						}
-			};
-			reader.readAsBinaryString(files[i]);
-		};
-
-  this.extractAllFields = function(files,$scope){
-		var a = [];
-		TemplateFactory.fields =[];
-		TemplateFactory.binaryFiles =[];
-		return TemplateFactory.readFile(files, 0, $scope);
-		};
-	this.importFieldValues = function(text){
-		var data = JSON.parse(text);
-		var output = [];
-
-		return data;
-		};
-
-	this.updateFields = function(){ };
-
-
-	this.replaceCodeWith = function(data, find, replace){
-		return data;
-
-	};
-	this.generateTemplate = function(preview, fields){
-		var output = $Fields.finalizeHtml(preview);
-
-			for(var f in fields){
-				if(fields.hasOwnProperty(f)){
-					if(fields[f].data_replace.length>0){
-						for(var i=0; i < fields[f]['data_replace'].length; i++){
-							//escape characters
-							var copy = fields[f].data_replace[i][0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-
-							var str = new RegExp(copy, "g");
-
-
-							if($Fields.typeExists(fields[f].type)){
-								//extensible handler
-								var replaceStr = $Fields.fieldTypes[fields[f].type].renderField(fields[f], fields[f].data_replace[i][1]);
-								// returns value to be replaced
-
-								console.log("replacing ", str, "with", replaceStr);
-								output = output.replace(str, replaceStr);
-
-							} else {
-								//default handler
-								output = output.replace(str, fields[f].value);
-							}
-
-
-
-							// if(fields[f].type=="repeat"){
-							// 	//console.log("%cWe found a repeat field "+fields[f].name, "background:yellow");
-							//
-							//
-							//
-							//
-							// } else if(fields[f].type=="date") {
-							// 	var date = TemplateFactory.generateDateFromField(fields[f], fields[f].value, fields[f].data_replace[i][1]);
-							// 	output = output.replace(str, date);
-							// } else {
-							// 	output = output.replace(str, fields[f].value);
-							// }
-
-						}
-					}
-				}
-			}
-			//do stuff to output for tpl-ifs
-
-
-			return output;
-		};
-
-
-  return TemplateFactory;
-	}]);

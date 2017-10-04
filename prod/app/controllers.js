@@ -121,23 +121,26 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
     var reader = new FileReader();
 	  reader.onloadend = function(evt){
 		  var droppedFields = JSON.parse(evt.target.result);
+      var outputFields = $Fields.tranformFieldStructure($scope.fields, "ungroup");
+
       $scope.$apply(function(){
         for(var i in droppedFields){
           if(droppedFields.hasOwnProperty(i)){
-            for(n=0;n<$scope.fields.length;n++){
-              if($scope.fields[n].name==i){
+            for(n=0;n<outputFields.length;n++){
+              if(outputFields[n].name==i){
                 console.log(droppedFields[i]);
-                if($scope.fields[n].type=="repeat"){
-                  $scope.fields[n].model = droppedFields[i];
+                if(outputFields[n].type=="repeat"){
+                  outputFields[n].model = droppedFields[i];
                 } else {
-                  $scope.fields[n].model = droppedFields[i];
-                  $scope.fields[n].value = droppedFields[i];
+                  outputFields[n].model = droppedFields[i];
+                  outputFields[n].value = droppedFields[i];
                 }
 
               }
             }
           }
         }
+        $scope.fields = $Fields.tranformFieldStructure(outputFields, "group");
       });
       setTimeout(function(){
         $scope.$apply(function(){
@@ -146,6 +149,7 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
       }, 300);
 
 	  };
+    window.ga('send', 'event', "IMPORT", "field values", "Import field values");
 		reader.readAsBinaryString(files[0]);
 	};
 
@@ -167,32 +171,13 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
 	$scope.updateFieldValue = function (field, value){
 		clearTimeout(debounce);
 		debounce = setTimeout(function(){
+
       $scope.$apply(function(){
-        // $scope.livePreview = "";
-        for(var i = 0; i<$scope.fields.length; i++){
-          if(!$scope.fields[i].hasOwnProperty("value")) $scope.fields[i].value = "";
-          $scope.fields[i].value = $scope.fields[i].model;
-          $PersistJS.set($scope.fields[i].name, $scope.fields[i].value);
-          console.log($scope.canLivePreview, $scope.livePreview);
+        field.value = field.model;
+  			field.value = field.value.replace(/\"/g, "//Q");
+        $PersistJS.set(field.name, field.value);
 
-          if(!$scope.canLivePreview && $scope.livePreview!==""){
-            console.log($scope.templateList[$scope.livePreview]);
-            $Export.exportLivePreview($scope.templateList[$scope.livePreview],$scope);
-            //$scope.livePreviewWindow.document.innerHTML = "";
-            //$scope.livePreviewWindow.document.write("hiwwww");
-            console.log("do live preview");
-          }
-
-
-        }
       });
-
-      // console.log(field.name, field.model);
-      // $scope.apply(function(){
-      //   field.value = field.model;
-  		// 	field.value = field.value.replace(/\"/g, "//Q");
-  		//
-      // });
 
 			//$scope.generated = TemplateFactory.generateTemplate($scope.preview, $scope.fields);
 			},300);
@@ -216,11 +201,6 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
     window.ga('send', 'event', "EXPORT", "preview", "Preview Single File");
 		};
 
-
-	$scope.importFieldValues = function(text){
-		$scope.fields = TemplateFactory.importFieldValues(text);
-    window.ga('send', 'event', "IMPORT", "field values", "Import field values");
-		};
 
 
   $scope.getFieldList  = function(){

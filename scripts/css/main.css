@@ -36,11 +36,75 @@
   display: inline-block;
   padding: .5em; }
 
+.field-group {
+  padding-left: 1em;
+  padding-top: .5em;
+  padding-right: 1em;
+  padding-bottom: 1em;
+  border: 0 0 0 0;
+  border-left: 5px solid;
+  border-color: green;
+  margin-top: .5em;
+  margin-bottom: 1em; }
+  .field-group .header {
+    color: green;
+    padding-bottom: .75em;
+    text-transform: uppercase;
+    font-weight: bold; }
+
+.ungrouped {
+  padding-left: 1em;
+  padding-top: .5em;
+  padding-right: 1em;
+  padding-bottom: 1em;
+  margin-top: .5em;
+  margin-bottom: 1em; }
+  .ungrouped .header {
+    display: none; }
+
+.field-group:nth-child(n+1) {
+  border-color: #00b5ad;
+  background-color: rgba(0, 181, 173, 0.1); }
+  .field-group:nth-child(n+1) .header {
+    color: #00b5ad; }
+
+.field-group:nth-child(n+2) {
+  border-color: #6435c9;
+  background-color: rgba(100, 53, 201, 0.1); }
+  .field-group:nth-child(n+2) .header {
+    color: #6435c9; }
+
+.field-group:nth-child(n+3) {
+  border-color: #a333c8;
+  background-color: rgba(163, 51, 200, 0.1); }
+  .field-group:nth-child(n+3) .header {
+    color: #a333c8; }
+
+.field-group:nth-child(n+4) {
+  border-color: #e03997;
+  background-color: rgba(224, 57, 151, 0.1); }
+  .field-group:nth-child(n+4) .header {
+    color: #e03997; }
+
+.field-group:nth-child(n+5) {
+  border-color: #f2711c;
+  background-color: rgba(242, 113, 28, 0.1); }
+  .field-group:nth-child(n+5) .header {
+    color: #f2711c; }
+
+.field-group:last-child {
+  margin-bottom: 5em; }
+
+.field-group.ungrouped {
+  border: 0;
+  padding-left: auto; }
+
 .file-dropper {
   border: dashed 3px #ccc;
   color: #ccc;
-  height: 50px;
-  line-height: 50px;
+  height: 100px;
+  line-height: 100px;
+  font-size: 18px;
   text-align: center;
   margin-top: 1em;
   box-sizing: content-box; }

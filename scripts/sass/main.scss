@@ -42,6 +42,54 @@ $accentColor: #A333C8;
 }
 
 
+.field-group {
+  .header  {color: green; padding-bottom: .75em;text-transform: uppercase; font-weight: bold;}
+  padding-left: 1em;
+  padding-top:.5em;
+  padding-right:1em;
+  padding-bottom: 1em;
+  border: 0 0 0 0;
+  border-left: 5px solid;
+  border-color: green;
+  margin-top: .5em;
+  margin-bottom: 1em;
+}
+
+.ungrouped {
+  .header {display: none;}
+  padding-left: 1em;
+  padding-top:.5em;
+  padding-right:1em;
+  padding-bottom: 1em;
+  margin-top: .5em;
+  margin-bottom: 1em;
+}
+
+$group-count: 1;
+$group-colors: #00b5ad #6435c9 #a333c8 #e03997 #f2711c;
+@each $color in $group-colors {
+  .field-group:nth-child(n+#{$group-count}){
+    border-color: $color;
+    background-color: fade-out($color, .9);
+    .header {
+      color: $color;
+    }
+  }
+  $group-count: $group-count + 1;
+}
+.field-group:last-child {
+  margin-bottom:5em;
+}
+
+
+
+
+.field-group.ungrouped {
+  border:0;
+  padding-left: auto;
+
+}
+
 .file-dropper {
   border: dashed 3px #ccc;
   color: #ccc;

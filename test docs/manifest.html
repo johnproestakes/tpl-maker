@@ -1,0 +1,85 @@
+<!-- TemplateMaker
+{{webinar_topic | text | length: 100 | group: "Webinar Info"}}
+{{webinar_date | date | group: "Webinar Info" }}
+{{webinar_start_time | time | group: "Webinar Info" }}
+{{webinar_end_time | time | group: "Webinar Info" }}
+{{on24_audience_url | text | group: "ON24" }}
+{{on24_event_id | text | group: "ON24" }}
+{{on24_session_id | text | group: "ON24" | default:"1" | label:"Session ID" | instructions: "This value is usually 1"}}
+{{on24_audience_key | text | group: "ON24" }}
+{{registration_page_url | url | instructions: "This is used to " | group: "Registration"}}
+{{response_management_phone | default: 866.223.4730 }}
+
+
+--><!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html lang="en">
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1"> <!-- So that mobile will display zoomed in -->
+  <meta http-equiv="X-UA-Compatible" content="IE=edge"> <!-- enable media queries for windows phone 8 -->
+  <meta name="format-detection" content="telephone=yes"> <!-- enable auto telephone linking in iOS -->
+  <title>Your webinar is confirmed.</title>
+
+  <style type="text/css">
+  .ExternalClass,.ExternalClass div,.ExternalClass font,.ExternalClass p,.ExternalClass span,.ExternalClass td,.buttonContent{line-height:100%}body{margin:0;padding:0;-ms-text-size-adjust:100%;-webkit-text-size-adjust:100%;background-color::#eaeaea}table{border-spacing:0;mso-table-lspace:0;mso-table-rspace:0}table td{border-collapse:collapse}.ExternalClass{width:100%}.ReadMsgBody{width:100%;background-color:#ebebeb}img{-ms-interpolation-mode:bicubic}.responsive-image img{height:auto!important;max-width:100%!important;width:100%!important}.yshortcuts a{border-bottom:none!important}@media screen and (max-width:599px){table[class=force-row],table[class=container]{width:100%!important;max-width:100%!important}}@media screen and (max-width:400px){td[class*=container-padding]{padding-left:12px!important;padding-right:12px!important}}.ios-footer
+a{color:#aaa!important;text-decoration:underline}.buttonContent{color:#FFF;font-family:Helvetica;font-size:18px;font-weight:700;padding:15px;text-align:center}.emailButton{background-color:#205478;border-collapse:separate}
+  </style>
+
+</head>
+
+<body style="margin:0; padding:0;" bgcolor="#eaeaea" leftmargin="0" topmargin="0" marginwidth="0" marginheight="0">
+
+
+
+<!-- 100% background wrapper (grey background) -->
+<table border="0" width="100%" height="100%" cellpadding="0" cellspacing="0">
+  <tr>
+    <td align="center" valign="top"><!-- 600px container (white background) -->
+  <table border="0" width="640" cellpadding="0" cellspacing="0" class="container" style="width:640px;max-width:640px; background-color:#FFF">
+
+        <tr>
+  <td style="padding-top:25px; padding-bottom:0px; padding-left:20px" align="left"></td>
+    </tr>
+
+
+    <tr>
+  <td class="container-padding content" align="left" style="padding-left:24px; padding-right:24px; padding-top:10px; padding-bottom:5px; background-color:#ffffff; line-height:22px;">
+<div class="body-text" style="font-family:Helvetica, Arial, sans-serif; font-size:14px; line-height:22px; text-align:left; color:#53565a;">
+  	<p>Dear <span class="eloquaemail">First_Name1</span>,</p>
+	<p>Thank you for registering for our upcoming webinar:</p>
+<p>
+  <strong>Topic:</strong> {{webinar_topic}}<br>
+  <strong>Date:</strong> {{webinar_date | date: "fullDate"}}<br>
+  <strong>Time:</strong>  {{webinar_start_time | time: "optumTime"}} &ndash; {{webinar_end_time | time: "optumTime+ZZZ"}}<br>
+  <strong>Duration:</strong>  {{webinar_duration}} <br>
+</p>
+
+   <table border="0" cellpadding="0" cellspacing="0">
+<tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr><tr><td><table border="0" cellpadding="0" cellspacing="0" style="padding:10px 0;"><tr><td align="center" valign="middle" bgcolor="#505152" style="-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; padding:10px; margin:0px;"><a href="" target="_blank" style="display:block;text-decoration:none;border:0;text-align:center; vertical-align:middle; font:13px/15px Arial, Helvetica, sans-serif;color:#fff;text-transform:uppercase;letter-spacing:2px;background:#505152;border:1px solid #505152;-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;"><span style="color:#fff;">ADD TO OUTLOOK CALENDAR</span></a></td></tr></table>
+</td></tr><tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr></table>
+</div>
+
+          </td>
+    </tr>
+    <tr>
+          <td class="container-padding content" align="left" style="padding-left:24px; padding-right:24px; padding-bottom:20px; background-color:#ffffff; color:#53565a; font-family:Gotham, 'Helvetica Neue', Helvetica, Arial, sans-serif; font-size:14px; line-height:22px;">
+          <div class="body-text">
+          <p>Each person must register separately, so please don't forward or share this link.</p>
+          <p>When it's time, <a href="{{on24_audience_url}}" style="color:#006ca2">click here to enter webinar</a>.</p>
+		  <p>Audio will be broadcast through your computer speakers or headphones. </p>
+          <p><a href="http://event.on24.com/utils/test/testYourSystem.html?eventid={{on24_event_id}}&sessionid={{on24_session_id}}&key={{on24_audience_key}}&checkBrowser=true&checkOS=true&checkBandwidth=true&checkCookie=true&ngwebcast=true&ngwebcast=true" style="color:#006ca2">Test Connection Requirements</a></p>
+		  <p><b>Experiencing problems?</b> If you need assistance, please call {{response_management_phone}}.</p>
+        </div></td>
+        </tr>
+   </table>
+<!--/600px container -->
+
+    </td>
+  </tr>
+</table>
+<!--/100% background wrapper-->
+
+
+
+
+</body></html>

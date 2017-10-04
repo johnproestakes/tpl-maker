@@ -186,34 +186,6 @@ angular.module('templateMaker')
 	}]);
 
 angular.module('templateMaker')
-.directive('magicHeader', ['$timeout',function($timeout){
-  return {
-    restrict: "E",
-    template: [
-      "<div>",
-      "<div class=\"ui inverted fluid ordered steps\">",
-        "<div class=\"step\" ng-click=\"navigateTo('#/main')\" ng-class=\"{completed: templateList.length>0}\">",
-          "<div class=\"content\">",
-            "<div class=\"title\">Templates</div>",
-            "</div>",
-          "</div>",
-        "<div class=\"step\" ng-click=\"templateLoaded()&&navigateTo('#/fields')\" ng-class=\"{completed:areAllFieldsCompleted(), disabled: !templateLoaded()}\">",
-          "<div class=\"content\">",
-            "<div class=\"title\">Fields</div>",
-            "</div>",
-          "</div>",
-        "<div class=\"step\" ng-click=\"areAllFieldsCompleted()&&navigateTo('#/export')\" ng-class=\"{disabled: !areAllFieldsCompleted()}\">",
-          "<div class=\"content\">",
-            "<div class=\"title\">Export</div>",
-            "</div>",
-          "</div>",
-        "</div>",
-      "</div>"
-    ].join("")
-  }
-}]);
-
-angular.module('templateMaker')
 .directive('tplRepeat', ['$timeout','$PersistJS','$Export',
 function($timeout,$PersistJS,$Export){
   return {
