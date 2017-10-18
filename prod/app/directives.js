@@ -1,117 +1,278 @@
-angular.module('templateMaker').directive('tplDate', ['$timeout',function($timeout){
+angular.module('templateMaker').directive('tplDatetime', ['$timeout','$filter','$Moment', function($timeout, $filter,$Moment){
   return {
     restrict: "E",
     scope:{ngModel:"=",ngChange:"&"},
     template: [
+
       "<div class=\"ui left icon input\">",
       "<i class=\"calendar icon\"></i>",
-      "<input type=\"text\" ng-model=\"ngModel\" readonly ng-change=\"ngChange()\"/>",
+      "<input readonly type=\"text\" class=\"dateInput\" ng-model=\"DateTime.nice_fullDate\"/>",
+      "</div>",
       "<div class=\"ui calendar popup\">",
-      "<table class=\"ui celled center aligned unstackable table seven column day\">",
+      "<table class=\"ui celled center aligned unstackable table seven column day\" ng-if=\"DateTime.showUI=='calendar'\">",
         "<thead>",
         "<tr ><th colspan=\"7\">",
-        "<span class=\"next link\" ng-click=\"advanceMonth(1)\"><i class=\"right chevron icon\"></i></span>",
-        "<span class=\"prev link\" ng-click=\"advanceMonth(-1)\"><i class=\"left chevron icon\"></i></span>",
-        "<span class=\"link\">{{nice_month | date: \"MMMM yyyy\"}}</span> </th></tr>",
+        "<span class=\"next link\" ng-click=\"DateTime.Calendar.advanceMonth(1)\"><i class=\"right chevron icon\"></i></span>",
+        "<span class=\"prev link\" ng-click=\"DateTime.Calendar.advanceMonth(-1)\"><i class=\"left chevron icon\"></i></span>",
+        "<span class=\"link\">{{DateTime.Calendar.nice_month | date: \"MMMM yyyy\"}}</span> </th></tr>",
         "<tr><th>S</th><th>M</th><th>T</th><th>W</th><th>R</th><th>F</th><th>S</th></tr></thead>",
-      "<tr ng-repeat=\"week in weeks\">",
-        "<td class=\"link\" ng-click=\"setDate(n)\" ng-class=\"{nextMonth: n[0]!==month, selected:n[0]==sel_month&&n[1]==sel_day }\" ng-repeat=\"n in week track by $index\">{{n[1]}}</td>",
+      "<tr ng-repeat=\"week in DateTime.Calendar.weeks\">",
+        "<td class=\"link\" ng-click=\"DateTime.setDate(n)\" ng-class=\"{nextMonth: n[0]!==DateTime.month, selected:n[0]==DateTime.sel_month&&n[1]==DateTime.sel_day }\" ng-repeat=\"n in week track by $index\">{{n[1]}}</td>",
       "</tr></table>",
-      "</div>"
+      "<table style=\"width:333px\" ng-if=\"DateTime.showUI=='clock'\" class=\"ui celled center aligned unstackable table seven column day\" >",
+      "<thead><tr><th colspan=\"4\">",
+      "<span class=\"prev link\" ng-click=\"DateTime.showUI='calendar'\"><i class=\"left chevron icon\"></i></span>",
+      "<span class=\"link\">{{DateTime.nice_date | date: \"longDate\"}}</span></td></tr></thead>",
+      "<tr ng-repeat=\"timeRow in DateTime.timeOptions track by $index\">",
+        "<td ng-repeat=\"timeCol in timeRow\" class=\"link\" ng-class=\"{selected:timeCol[1]==DateTime.hour}\"  ng-click=\"DateTime.setHour(timeCol[1]);DateTime.showUI='minutes'\">",
+          "{{timeCol[0]}}",
+        "</td>",
+      "</tr>",
+      "</table>",
+      "<table style=\"width:340px\" ng-if=\"DateTime.showUI=='minutes'\" class=\"ui celled center aligned unstackable table seven column day\" >",
+      "<thead><tr><th colspan=\"4\">",
+      "<span class=\"prev link\" ng-click=\"DateTime.showUI='clock'\"><i class=\"left chevron icon\"></i></span>",
+      "<span class=\"link\">{{DateTime.nice_date | date: \"longDate\"}}</span></td></tr></thead>",
+      "<tr ng-repeat=\"timeRow in DateTime.minuteOptions track by $index\">",
+        "<td ng-repeat=\"timeCol in timeRow\" class=\"link\" ng-class=\"{selected:timeCol[1]==DateTime.minute}\"  ng-click=\"DateTime.setMinutes(timeCol[1]);DateTime.showUI='timezone'\">",
+          "{{timeCol[0]}}",
+        "</td>",
+      "</tr>",
+      "</table>",
+
+      "<table style=\"width:340px\" ng-if=\"DateTime.showUI=='timezone'\" class=\"ui celled center aligned unstackable table seven column day\" >",
+      "<thead><tr><th colspan=\"2\">",
+      "<span class=\"prev link\" ng-click=\"DateTime.showUI='minutes'\"><i class=\"left chevron icon\"></i></span>",
+      "<span class=\"link\">{{DateTime.nice_date | date: \"longDate\"}}</span></td></tr></thead>",
+      "<tr ng-repeat=\"timeRow in DateTime.timezones track by $index\">",
+        "<td ng-repeat=\"timeCol in timeRow\" class=\"link\" ng-class=\"{selected:timeCol==DateTime.timezone}\"  ng-click=\"DateTime.setTimezone(timeCol);DateTime.hidePopup()\">",
+          "{{timeCol}}",
+        "</td>",
+      "</tr>",
+      "</table>",
+
+              "</div>"
     ].join(""),
     link: function(scope, el, attr){
 
-      if(scope.ngModel.match(/([0-9]{4})-([0-9]{2})-([0-9]{2})/g)) {
-        var d = scope.ngModel.split("-");
-        scope.sel_year = d[0]*1;
-        scope.sel_month = (d[1]*1)-1;
-        scope.sel_day = d[2]*1;
-        scope.year = d[0]*1;
-        scope.month = (d[1]*1)-1;
-        scope.day = d[2]*1;
-
-      } else {
-        scope.year = new Date().getFullYear();
-        scope.day = new Date().getDate();
-        scope.month = new Date().getMonth();
-      }
-
-      scope.nice_month = new Date(scope.year, scope.month);
 
 
-      scope.getDates = function(){
-        var startDate = new Date(scope.year, scope.month, 1).getDay();
-        var endDate = new Date(scope.year, scope.month+1, 0).getDate();
-        var weeks = [[]], pointer = 0, day = 1;
+      var DateTimeInstance = /**@class*/ (function(){
+        function DateTime(dateTimeStr, scope){
+          this.scope = scope;
+          var dateTimeFormat = dateTimeStr.split("|");
+          var dateMoment = $Moment(dateTimeFormat[0]);
 
-        //first week
+          if(dateMoment.isValid()) {
 
-        var prevMonthEnds = new Date((scope.month-1 ==-1 ? scope.year : scope.year-1), (scope.month-1 ==-1 ? 11 : scope.month-1), 0).getDate();
-        var pday = 1;
-        for(var i=prevMonthEnds; i>(prevMonthEnds-startDate); i--){
-          weeks[pointer].unshift([
-            (scope.month-1 ==-1 ? 11 : scope.month-1),
-            i,
-            (scope.month-1 ==-1 ? scope.year-1 : scope.year)]);
-        }
+            this.setYear(dateMoment.year());
+            this.setMonth(dateMoment.month());
+            this.setDay(dateMoment.date());
+            this.setHour(dateMoment.hour());
+            this.setMinutes(dateMoment.minute());
+            this.setTimezone(dateTimeFormat[1]);
+            this.updateDateTimeStr();
 
-        // rest of the month
-        for(var i=0; i<(42-startDate); i++){
-          weeks[pointer].push(day <= endDate ? [scope.month, day, scope.year] :
-            [
-              (scope.month+1 ==12 ? 0 : scope.month+1),
-              day-endDate,
-              (scope.month+1 ==12 ? scope.year+1 : scope.year)
-            ]);
-          if(((startDate + day) % 7) == 0 ){
-            weeks.push([]);
-            pointer++;
+          } else {
+            var newDate = new Date();
+            this.setYear(newDate.getFullYear());
+            this.setMonth(newDate.getMonth());
+            this.setDay(newDate.getDate());
+            this.setHour(12);
+            this.setMinutes("00");
+            this.setTimezone("US/Eastern");
+            this.updateDateTimeStr();
+
           }
-          day++;
+          this.showUI = "calendar";
+          this.timeOptions = [
+            [["12:00 AM", 0],
+            ["1:00 AM", 1],
+            ["2:00 AM", 2],
+            ["3:00 AM", 3]],
+            [["4:00 AM", 4],
+            ["5:00 AM", 5],
+            ["6:00 AM", 6],
+            ["7:00 AM", 7]],
+            [["8:00 AM", 8],
+            ["9:00 AM", 9],
+            ["10:00 AM", 10],
+            ["11:00 AM", 11]],
+            [["12:00 PM", 12],
+            ["1:00 PM", 13],
+            ["2:00 PM", 14],
+            ["3:00 PM", 15]],
+            [["4:00 PM", 16],
+            ["5:00 PM", 17],
+            ["6:00 PM", 18],
+            ["7:00 PM", 19]],
+            [["8:00 PM", 20],
+            ["9:00 PM", 21],
+            ["10:00 PM", 22],
+            ["11:00 PM", 23]]
 
+          ]
+          this.hourOptions = [1,2,3,4,5,6,7,8,9,10,11,12];
+          this.minuteOptions = ["00",15,30,45];
+          this.timezones = [["US/Eastern","US/Central"],["US/Mountain","US/Pacific"]];
+          this.Calendar = new CalendarInstance(this);
+        }
+        DateTime.prototype.setDate = function(dateArray){
+          console.log("DATEARRAY", dateArray);
+          this.setYear(dateArray[2]);
+          this.setMonth(dateArray[0]);
+          this.setDay(dateArray[1]);
+          this.showUI = "clock";
+        };
+        DateTime.prototype.setDay = function(n){
+          this.sel_day = (this.day = n);
+          this.updateDateTimeStr();
+        };
+        DateTime.prototype.setMonth = function(n){
+          this.sel_month = (this.month = n);
+          this.updateDateTimeStr();
+        };
+        DateTime.prototype.setYear = function(n){
+          this.sel_year = (this.year = n);
+          this.updateDateTimeStr();
+        };
+        DateTime.prototype.setMinutes = function(n){
+          this.sel_minute = (this.minute = n);
+          this.updateDateTimeStr();
+        };
+        DateTime.prototype.setHour = function(n){
+          this.sel_hour = (this.hour = n);
+
+          this.minuteOptions = [];
+          for(var i=0;i<4;i++){
+            console.log([this.hour+(i*15==0 ? "00" : i*15), i*15]);
+            var a = new Date(this.year, this.month, this.day, this.hour, i*15);
+            this.minuteOptions.push([$filter('date')(a, 'shortTime'), i*15]);
+          }
+          this.minuteOptions = [this.minuteOptions];
+          this.updateDateTimeStr();
+        };
+        DateTime.prototype.setTimezone = function(n){
+          this.sel_timezone = (this.timezone = n);
+          this.updateDateTimeStr();
+        };
+
+        DateTime.prototype.hidePopup = function(){
+          jQuery(el).find('.dateInput').popup("hide");
+          setTimeout(function(){
+            this.showUI = 'calendar';
+          },1000);
+        };
+        DateTime.prototype.updateDateTimeStr = function(){
+          var DT = this;
+          var tmpDate = new Date(this.year, this.month, this.day, this.hour, this.minute, 0);
+          // this.scope.$apply(function(){
+            this.nice_date = $filter('date')(new Date(this.year, this.month, this.day), 'longDate');
+            this.nice_fullDate = $filter('date')(new Date(this.year, this.month, this.day, this.hour, this.minute), "EEEE, MMMM d, y '—' h:mm a") + " " + this.timezone;
+
+
+            DT.scope.ngModel = $Moment(tmpDate).toISOString() +"|"+ this.timezone;
+            if(DT.scope.ngModel!=="") {
+              DT.scope.ngChange();
+            }
+
+          // });
+
+          // jQuery(el).find('.dateInput').popup("hide");
+          // $filter('date')(time_js, format);
+          //scope.ngModel = this.year + "-" + ((n[0]+1) < 10 ? "0"+ (n[0]+1) : n[0]+1 ) + "-" + (n[1] < 10 ? "0"+ n[1] : n[1]);
         }
 
-        return weeks;
-
-      };
-
+        return DateTime;
+      })();
 
 
 
-      scope.weeks = scope.getDates();
-      scope.setDate= function(n){
-        scope.ngModel = n[2] + "-" + ((n[0]+1) < 10 ? "0"+ (n[0]+1) : n[0]+1 ) + "-" + (n[1] < 10 ? "0"+ n[1] : n[1]);
 
-        scope.day = n[1];
-        scope.month = n[0];
-        scope.year = n[2];
+var ClockInstance = (function(){
+  function ClockInstance(){
 
-        scope.sel_day = n[1];
-        scope.sel_month = n[0];
-        scope.sel_year = n[2];
+  }
+  ClockInstance.prototype.setHour = function(n){
 
-        jQuery(el).find('input').popup("hide");
-        console.log(scope.ngModel);
-        scope.ngChange();
-      };
-      scope.advanceMonth = function(inc){
-        console.log(scope.month, scope.year);
-        if ( inc<0 && scope.month-1 == -1 ) { scope.month = 11;}
-        else if ( inc>0 && scope.month+1 == 12 ) { scope.month = 0;}
-        else { scope.month += inc; }
+  };
+})();
+var CalendarInstance = /**@class*/ (function(){
+  function CalendarInstance(_super){
+    var CI = this;
+    this._super = _super;
+    this._super.scope.$apply(function(){
+      CI.nice_month = new Date(CI._super.year, CI._super.month);
+      CI.weeks = CI.getWeeks();
+    });
 
-        if(inc<0 && scope.month==11) scope.year-=1;
-        if(inc>0 && scope.month==0 ) scope.year+=1;
+  }
+  CalendarInstance.prototype.updateDate = function(){
 
-        scope.nice_month = new Date(scope.year, scope.month);
-        scope.weeks = scope.getDates();
+  };
+  CalendarInstance.prototype.advanceMonth = function(inc){
+    var CI = this;
+    // console.log(CI.super.month, CI.super.year);
+    if ( inc<0 && CI._super.month-1 == -1 ) { CI._super.month = 11;}
+    else if ( inc>0 && CI._super.month+1 == 12 ) { CI._super.month = 0;}
+    else { CI._super.month += inc; }
 
-      };
+    if(inc<0 && CI._super.month==11) CI._super.year-=1;
+    if(inc>0 && CI._super.month==0 ) CI._super.year+=1;
 
+    CI.nice_month = new Date(CI._super.year, CI._super.month);
+    CI.weeks = CI.getWeeks();
+  };
+  CalendarInstance.prototype.getWeeks = function(){
+    var CI = this;
+    var startDate = new Date(CI._super.year, CI._super.month, 1).getDay();
+    var endDate = new Date(CI._super.year, CI._super.month+1, 0).getDate();
+    var weeks = [[]], pointer = 0, day = 1;
+
+    //first week
+    var prevMonthEnds = new Date((CI._super.month-1 ==-1 ? CI._super.year : CI._super.year-1), (CI._super.month-1 ==-1 ? 11 : CI._super.month-1), 0).getDate();
+    var pday = 1;
+    for(var i=prevMonthEnds; i>(prevMonthEnds-startDate); i--){
+      weeks[pointer].unshift([
+        (CI._super.month-1 ==-1 ? 11 : CI._super.month-1),
+        i,
+        (CI._super.month-1 ==-1 ? CI._super.year-1 : CI._super.year)]);
+    }
+
+    // rest of the month
+    for(var i=0; i<(42-startDate); i++){
+      weeks[pointer].push(day <= endDate ? [CI._super.month, day, CI._super.year] :
+        [
+          (CI._super.month+1 ==12 ? 0 : CI._super.month+1),
+          day-endDate,
+          (CI._super.month+1 ==12 ? CI._super.year+1 : CI._super.year)
+        ]);
+      if(((startDate + day) % 7) == 0 ){
+        weeks.push([]);
+        pointer++;
+      }
+      day++;
+
+    }
+
+    return weeks;
+
+  };
+  return CalendarInstance;
+})();
+
+
+
+
+
+
+
+
+///init
       $timeout(function(){
-
+        scope.DateTime = new DateTimeInstance(scope.ngModel, scope);
         var popup = jQuery(el).find('.ui.popup');
-        jQuery(el).find('input').popup({
+        jQuery(el).find('.dateInput').popup({
           on: "click",
           boundary: document.body,
           jitter: 50,
@@ -165,8 +326,13 @@ angular.module('templateMaker')
 
 			fileDropper.get(0).addEventListener('drop', function(evt){
 				evt.stopPropagation();
-    			evt.preventDefault();
-				scope.$parent[attr.ondrop.replace("()", "")](evt);
+    		evt.preventDefault();
+				// scope.$parent[attr.ondrop.replace("()", "")](evt);
+				console.log('dropping', evt);
+				scope.$apply(function(){
+					scope.ondrop({ "evt": evt });
+				});
+
 				dropperReset(evt);
 				}, false);
 			fileDropper.get(0).addEventListener('dragend', dropperReset, false);
@@ -290,173 +456,6 @@ angular.module('templateMaker').directive('tplTextbox', ['$timeout',function($ti
     link: function(scope, el, attr){
       $timeout(function(){
         console.log("tpl-textbox");
-      });
-    }
-  };
-}]);
-
-angular.module('templateMaker').directive('tplTime', ['$timeout',function($timeout){
-  return {
-    restrict: "E",
-    scope:{ngModel:"=",field:"=", ngModel:"=",ngChange:"&"},
-    template: [
-
-      "<div class=\"ui grid\">",
-
-      "<div class=\"four wide column\">",
-      "<input type=\"hidden\" ng-model=\"ngModel\">",
-        "<div class=\"ui basic compact buttons\">",
-        "<div class=\"ui scrolling dropdown button\" ui-dropdown>",
-        "{{hour}}<i class=\"dropdown icon\"></i>",
-        "<div class=\"menu\" >",
-          "<div class=\"item\" ng-click=\"setHour(hour)\" ng-repeat=\"hour in hourOptions track by $index\">{{hour}}</div>",
-          "</div>",
-          "</div>",
-          "<div class=\"ui scrolling dropdown button\" ui-dropdown>",
-          "{{minute}}<i class=\"dropdown icon\"></i>",
-          "<div class=\"menu\" >",
-            "<div class=\"item\" ng-click=\"setMinutes(minute)\" ng-repeat=\"minute in minuteOptions track by $index\">{{minute}}</div>",
-            "</div>",
-            "</div>",
-
-"</div>",
-          "</div>",
-          "<div class=\"three wide column\" style=\"padding-top:1.5em\">",
-          "<div class=\"inline fields\">",
-          "<div class=\"field\">",
-            "<div class=\"ui radio checkbox\">",
-              "<input type=\"radio\" ng-model=\"timeParts.p\" value=\"AM\"  tabindex=\"0\" >",
-                "<label>AM</label>",
-                "</div>",
-                "</div>",
-                "<div class=\"ui radio checkbox\">",
-                  "<input type=\"radio\" ng-model=\"timeParts.p\" value=\"PM\" tabindex=\"0\">",
-                    "<label>PM</label>",
-                    "</div>",
-                  "</div>",
-                "</div>",
-
-      "<div class=\"five wide column\">",
-      "<div class=\"ui compact basic scrolling dropdown button\" ui-dropdown>",
-      "{{timezones[timeParts.t]}} <i class=\"dropdown icon\"></i>",
-      "<div class=\"menu\">",
-        "<div class=\"item\" ng-repeat=\"(key,value) in timezones track by $index\" ng-click=\"setTimezone(key)\">{{value}}</div>",
-        "</div>",
-      "</div>",
-      "</div>"
-    ].join(""),
-    link: function(scope, el, attr){
-
-      scope.timeParts = {
-        h: 12,
-        m: "00",
-        p: "PM",
-        t: "EST"
-      };
-      var regex = /([0-9]{1,2})\:([0-9]{2}) (\A\M|\P\M) ([A-Z]{3})?/g;
-      var b = scope.ngModel.match(regex);
-
-      if(b) {
-        var match = regex.exec(scope.ngModel);
-        console.log(match);
-        scope.timeParts.h = match[1]*1;
-        scope.timeParts.m = match[2];
-        scope.timeParts.p = match[3];
-        if(match[4] !== null)
-          scope.timeParts.t = match[4];
-
-        console.log(scope.timeParts);
-      } else {
-        // scope.year = new Date().getFullYear();
-        // scope.day = new Date().getDate();
-        // scope.month = new Date().getMonth();
-      }
-
-      scope.setMinutes = function(min){
-          scope.timeParts.m = min;
-          scope.minute = scope.timeParts.m;
-          scope.updateFieldValues();
-          console.log(min);
-      };
-      scope.setHour = function(hour){
-          scope.timeParts.h = (scope.timeParts.p == "PM") ? hour*1 + 12 : hour*1;
-          scope.hour = hour;
-          scope.updateFieldValues();
-      };
-
-      scope.setTimezone = function(timezone){
-        scope.timeParts.t = timezone;
-        scope.updateFieldValues();
-      };
-      scope.timezones = {
-        "EST":"Eastern Standard Time (EST)",
-        "EDT":"Eastern Daylight Time (EDT)",
-        "ET":"Eastern Time (ET)",
-        "CST":"Central Standard Time (CST)",
-        "MST":"Mountain Standard Time (MST)",
-        "PST":"Pacific Standard Time (CST)"
-      };
-      scope.getTimezones = function(){
-        var output = [];
-        for(i in scope.timezones){
-          if(scope.timezones.hasOwnProperty(i)){
-
-          }
-        }
-        return ["EST","EDT", "ET", "CST", "MST", "PST"];
-      };
-      scope.hourOptions = [];
-      scope.minuteOptions = [];
-      scope.timezoneOptions = scope.getTimezones();
-
-      scope.updateFieldValues = function(){
-        scope.ngModel = (scope.timeParts.h > 13 ? scope.timeParts.h*1 - 12 : scope.timeParts.h*1) + ":"+scope.timeParts.m+" "+scope.timeParts.p + " " + (scope.timezone===undefined ? "EST" : scope.timezone);
-        console.log(scope.ngModel);
-        scope.ngChange();
-      };
-
-      scope.getHours = function(){
-        var output = [];
-        for(i=1; i<=12; i++){
-          output.push(i);
-        }
-          return output;
-
-      };
-      scope.getMinutes = function(){
-        var output = [];
-        output.push("00");
-        for(i=1; i<4; i++){
-          output.push(i*15);
-        }
-          return output;
-
-      };
-      scope.hourOptions = scope.getHours();
-      scope.minuteOptions = scope.getMinutes();
-
-      $timeout(function(){
-        scope.updateFieldValues();
-        // if(/[0-9]{1,2}:[0-9]{1,2}\s(AM|PM)\s[A-Z]{3}/.test(scope.ngModel)){
-        //   var time_js = scope.ngModel.split(" ");
-        //   scope.timeParts.h = time_js[0].split(":").shift();
-        //   scope.timeParts.m = time_js[0].split(":").pop();
-        //   scope.timeParts.p = time_js[1];
-        //
-        //   scope.updateFieldValues();
-        //   scope.time = time_js[0] + " " + time_js[1];
-        //   scope.timezone = time_js[2];
-        // } else {
-        //   scope.$apply(function(){
-        //     scope.time = "12:00 PM";
-        //     scope.timezone = "EST";
-        //   });
-        //
-        // }
-
-        scope.hour = scope.timeParts.h > 12 ? scope.timeParts.h - 12 : scope.timeParts.h;
-        scope.minute = scope.timeParts.m;
-
       });
     }
   };

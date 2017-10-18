@@ -13,6 +13,14 @@ gulp.task('sass', function(){
   .pipe(gulp.dest('scripts/css'));
 });
 
+
+gulp.task('docs', function(){
+  gulp.src([
+    'dev/app/docs/framework/before.html',
+    'dev/app/docs/topics/*.html',
+    'dev/app/docs/framework/after.html']).pipe(concat('docs.html')).pipe(gulp.dest('prod/app/'));
+});
+
 gulp.task('ts', function(){
   myApps.forEach(function(app){
     gulp.src('dev/'+app+'/*.ts' )
@@ -43,10 +51,11 @@ gulp.task('watch', function(){
   connect.server();
   myApps.forEach(function(app){
     gulp.watch('scripts/sass/**/*.scss', ['sass']);
+    gulp.watch('dev/'+app+'/docs/**/*.html', ['docs']);
     gulp.watch('dev/'+app+'/*.ts', ['ts']);
     gulp.watch(['dev/'+app+'/*.js','dev/'+app+'/**/*.js'], ['ts']);
   });
   connect.reload();
 });
 
-gulp.task('default', ['ts', 'watch']);
+gulp.task('default', ['ts', 'watch', 'docs', 'sass']);

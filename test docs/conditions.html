@@ -1,7 +1,8 @@
 <!-- TemplateMaker
-{{webinar_topic | text | length: 100 | group: "Webinar Info" | label: Webinar Topic}}
-{{webinar_start_time | datetime | group: "Webinar Info" | label: Webinar Start Time}}
-{{webinar_end_time | datetime | group: "Webinar Info" | label: Webinar End Time}}
+{{webinar_topic | text | length: 100 | label:"Webinar Topic" | group: "Webinar Info"}}
+{{webinar_date | date | group: "Webinar Info" }}
+{{webinar_start_time | time | group: "Webinar Info" }}
+{{webinar_end_time | datetime | group: "Webinar Info" }}
 {{on24_audience_url | text | group: "ON24" }}
 {{on24_event_id | text | group: "ON24" }}
 {{on24_session_id | text | group: "ON24" | default:"1" | label:"Session ID" | instructions: "This value is usually 1"}}
@@ -10,7 +11,7 @@
 {{response_management_phone | default: 866.223.4730 }}
 
 
---><!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+--><!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd" />
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -48,13 +49,18 @@ a{color:#aaa!important;text-decoration:underline}.buttonContent{color:#FFF;font-
 	<p>Thank you for registering for our upcoming webinar:</p>
 <p>
   <strong>Topic:</strong> {{webinar_topic}}<br>
-  <strong>Date:</strong> {{webinar_start_time | datetime: "fullDate"}}<br>
-  <strong>Time:</strong>  {{webinar_start_time | datetime: "optumTime"}} &ndash; {{webinar_end_time | datetime: "optumTime+ZZZ"}}<br>
+  <strong>Date:</strong> {{webinar_date | date: "fullDate"}}<br>
+  <strong>Time:</strong>  {{webinar_start_time | time: "optumTime"}} &ndash; {{webinar_end_time | time: "optumTime+ZZZ"}}<br>
   <strong>Duration:</strong>  {{webinar_duration}} <br>
 </p>
 
+<div id="speakers" tpl-if="webinar_speaker_name">
+{{webinar_speaker_name}}
+{{webinar_speaker_name}}
+  </div>
+
    <table border="0" cellpadding="0" cellspacing="0">
-<tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr><tr><td><table border="0" cellpadding="0" cellspacing="0" style="padding:10px 0;"><tr><td align="center" valign="middle" bgcolor="#505152" style="-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; padding:10px; margin:0px;"><a href="{{webinar_topic|text:uriencode}}" target="_blank" style="display:block;text-decoration:none;border:0;text-align:center; vertical-align:middle; font:13px/15px Arial, Helvetica, sans-serif;color:#fff;text-transform:uppercase;letter-spacing:2px;background:#505152;border:1px solid #505152;-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;"><span style="color:#fff;">ADD TO OUTLOOK CALENDAR</span></a></td></tr></table>
+<tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr><tr><td><table border="0" cellpadding="0" cellspacing="0" style="padding:10px 0;"><tr><td align="center" valign="middle" bgcolor="#505152" style="-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px; padding:10px; margin:0px;"><a href="" target="_blank" style="display:block;text-decoration:none;border:0;text-align:center; vertical-align:middle; font:13px/15px Arial, Helvetica, sans-serif;color:#fff;text-transform:uppercase;letter-spacing:2px;background:#505152;border:1px solid #505152;-moz-border-radius: 4px; -webkit-border-radius: 4px; border-radius: 4px;"><span style="color:#fff;">ADD TO OUTLOOK CALENDAR</span></a></td></tr></table>
 </td></tr><tr><td height="10" style="font-size: 10px; line-height: 10px;">&nbsp;</td></tr></table>
 </div>
 

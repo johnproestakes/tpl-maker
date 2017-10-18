@@ -23,5 +23,9 @@
     "gulp-sass": "^3.1.0",
     "gulp-typescript": "~2.13.4"
   },
-  "homepage": "https://github.com/johnproestakes/tpl-maker#readme"
+  "homepage": "https://github.com/johnproestakes/tpl-maker#readme",
+  "dependencies": {
+    "moment": "^2.19.1",
+    "moment-timezone": "^0.5.13"
+  }
 }

@@ -21,6 +21,8 @@
 <script type="text/javascript" src="scripts/js/libs/jquery.min.js"></script>
 <script type="text/javascript" src="scripts/js/libs/angular.min.js"></script>
 <script type="text/javascript" src="scripts/js/libs/angular-route.min.js"></script>
+<script type="text/javascript" src="scripts/js/libs/moment.min.js"></script>
+<script type="text/javascript" src="scripts/js/libs/moment-timezone-with-data-2012-2022.min.js"></script>
 <script type="text/javascript" src="scripts/js/jupiter-drag-drop.js"></script>
 <script type="text/javascript" src="scripts/js/libs/semantic.min.js"></script>
 
@@ -36,7 +38,7 @@
   <div ng-app="templateMaker" ng-controller="MainController" id="app_body">
     <div class="ui fixed inverted top menu" ng-if="showNavBar()">
       <div class="ui container">
-        <div class="item"><img src="assets/logo.png"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
+        <div class="item"><img src="assets/logo.png" ng-hide="isLoading"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
         <a href="javascript:angular.noop()" ng-click="blankSlate()" class="item">New Workspace</a>
         <div class="right menu">
           <div class="narrow-view ui pointing dropdown item" ui-dropdown>
@@ -50,17 +52,17 @@
           <div class="item wide-view" style="padding:.5em .5em">
             <div>
             <div class="ui inverted fluid ordered steps">
-              <div class="step" ng-click="navigateTo('#/main')" ng-class="{completed: templateList.length>0}">
+              <div class="step" ng-click="navigateTo('#/main')" ng-class="{completed: Workspace.templateList.length>0}">
                 <div class="content">
                   <div class="title">Templates</div>
                   </div>
                 </div>
-              <div class="step" ng-click="templateLoaded()&&navigateTo('#/fields')" ng-class="{completed:areAllFieldsCompleted(), disabled: !templateLoaded()}">
+              <div class="step" ng-click="Workspace.isTemplateLoaded()&&navigateTo('#/fields')" ng-class="{completed:Workspace.areAllFieldsCompleted(), disabled: !Workspace.isTemplateLoaded()}">
                 <div class="content">
                   <div class="title">Fields</div>
                   </div>
                 </div>
-              <div class="step" ng-click="areAllFieldsCompleted()&&navigateTo('#/export')" ng-class="{disabled: !areAllFieldsCompleted()}">
+              <div class="step" ng-click="Workspace.areAllFieldsCompleted()&&navigateTo('#/export')" ng-class="{disabled: !Workspace.areAllFieldsCompleted()}">
                 <div class="content">
                   <div class="title">Export</div>
                   </div>
@@ -69,13 +71,13 @@
             </div>
           </div>
           <div class="ui pointing dropdown item" ui-dropdown>
-            <span class="truncate" style="width:7em;">{{sessionUserEmail}}</span>
+            <span class="truncate" style="width:7em;">{{SecureGateway.sessionUserEmail}}</span>
              <i class="dropdown icon"></i>
             <div class="menu">
               <a href="#/build-tag" class="item">Tag Builder</a>
               <a href="#/help" class="item">Help?</a>
               <div class="divider"></div>
-              <div class="item" ng-click="logOut()">Log out</div>
+              <div class="item" ng-click="SecureGateway.logOut()">Log out</div>
 
               </div>
             </div>

@@ -1,0 +1,137 @@
+<div class="ui grid">
+  <div class="four wide column">
+  </div>
+  <div class="twelve wide column">
+
+
+
+<h1>Help</h1>
+
+
+
+<p>Variables have changed in the new version of template maker. The new format follows the pattern below:</p>
+
+<pre>{{ variable_name | type: format }}</pre>
+
+<p>For example:</p>
+<pre>{{ webinar_date | date: "longDate" }}</pre>
+
+
+<p>For text fields you can specify long text and regular text boxes:</p>
+<pre>{{ webinar_title }}
+{{ webinar_description | textarea }}</pre>
+
+<h1>Help</h1>
+
+<p>Variables have changed in the new version of template maker. The new format follows the pattern below:</p>
+
+<pre>{{ variable_name | type: format }}</pre>
+
+<p>For example:</p>
+<pre>{{ webinar_date | date: "longDate" }}</pre>
+
+
+<p>For text fields you can specify long text and regular text boxes:</p>
+<pre>{{ webinar_title }}
+{{ webinar_description | textarea }}</pre>
+
+<h2>Validation</h2>
+<p>You can add a character count limitation to regular textboxes.</p>
+<pre>{{ webinar_title | length: 45 }}</pre>
+
+<p>You can require a field to be filled out using the required parameter.</p>
+<pre>{{ webinar_title | required }}</pre>
+
+<p>You can add validation for a url by specifying a url type:</p>
+<pre>{{ webinar_attendee_url | url }}</pre>
+<p>These urls will have to be a URL in order for you to export the files.</p>
+
+<h2>Uriencode</h2>
+<p>You can easily convert strings to URL safe strings using the uriencode format. This is particularly useful when you want to use a URL or text with special characters as a query string parameter.</p>
+<pre>{{ webinar_attendee_url | text: uriencode }}</pre>
+
+<h2>Date Formats</h2>
+<p>One cool thing that you can do, is display the date in a more
+customizable way. What you'll notice immediately is that
+you can only specify a date in a rigid YYYY-MM-DD format. On the template
+variable you can specify the month as either the standard date format,
+or something more unique-- a couple examples:</p>
+<table class="ui table">
+<thead><tr><th>Code</th><th>Renders</th></tr></thead>
+<tr><td><code>{{ webinar_date | date: "longDate" }}</code></td><td> September 3, 2010</td></tr>
+<tr><td><code>{{ webinar_date | date: "fullDate" }}</code></td><td> Friday, September 3, 2010</td></tr>
+<tr><td><code>{{ webinar_date | date: "MMMM" }}</code></td><td> September</td></tr>
+<tr><td><code>{{ webinar_date | date: "yyyyMMdd" }}</code></td><td> 20170903</td></tr>
+</table>
+
+<h2>Time Formats</h2>
+<p>You can display times using the time tag:</p>
+
+<table class="ui table">
+<thead><tr><th>Code</th><th>Renders</th></tr></thead>
+<tr><td><code>{{ webinar_time_start | time: "shortTime" }}</code></td><td> 2:00 PM</td></tr>
+<tr><td><code>{{ webinar_time_end | time: "shortTime+ZZZ" }}</code></td><td> 2:00 PM EST</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "optumTime" }}</code></td><td> 2:00 p.m.</td></tr>
+<tr><td><code>{{ webinar_time_end | time: "optumTime+ZZZ" }}</code></td><td> 2:00 p.m. EST</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "hh:mm" }}</code></td><td> 2:00</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "UTC" }}</code></td><td> T180000Z <br>UTC adds 4 hours from EST.</td></tr>
+</table>
+
+
+<h2>Loops</h2>
+<p>Below is an example code for creating repeating blocks of variables. Notice how the variables inside a repeating block are wrapped with hashtags.</p>
+<code><pre>
+{{ webinar_speakers | repeat: \`
+  {{ speaker_name | length: 128 }} &lt;br/&gt;
+  {{ job_title | length: 128 }} &lt;br/&gt;
+  {{ description | length: 128 }} &lt;br/&gt;
+
+\` }}
+</pre></code>
+
+<div style="height: 50px;"></div>
+
+<h2>Loops</h2>
+<p>Below is an example code for creating repeating blocks of variables. Notice how the variables inside a repeating block are wrapped with hashtags.</p>
+<code><pre>
+{{ webinar_speakers | repeat: \`
+  {{ speaker_name | length: 128 }} &lt;br/&gt;
+  {{ job_title | length: 128 }} &lt;br/&gt;
+  {{ description | length: 128 }} &lt;br/&gt;
+
+\` }}
+</pre></code>
+
+
+<h2>Time Formats</h2>
+<p>You can display times using the time tag:</p>
+
+<table class="ui table">
+<thead><tr><th>Code</th><th>Renders</th></tr></thead>
+<tr><td><code>{{ webinar_time_start | time: "shortTime" }}</code></td><td> 2:00 PM</td></tr>
+<tr><td><code>{{ webinar_time_end | time: "shortTime+ZZZ" }}</code></td><td> 2:00 PM EST</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "optumTime" }}</code></td><td> 2:00 p.m.</td></tr>
+<tr><td><code>{{ webinar_time_end | time: "optumTime+ZZZ" }}</code></td><td> 2:00 p.m. EST</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "hh:mm" }}</code></td><td> 2:00</td></tr>
+<tr><td><code>{{ webinar_time_start | time: "UTC" }}</code></td><td> T180000Z <br>UTC adds 4 hours from EST.</td></tr>
+</table>
+
+
+<h2>Uriencode</h2>
+<p>You can easily convert strings to URL safe strings using the uriencode format. This is particularly useful when you want to use a URL or text with special characters as a query string parameter.</p>
+<pre>{{ webinar_attendee_url | text: uriencode }}</pre>
+
+
+<h2>Validation</h2>
+<p>You can add a character count limitation to regular textboxes.</p>
+<pre>{{ webinar_title | length: 45 }}</pre>
+
+<p>You can require a field to be filled out using the required parameter.</p>
+<pre>{{ webinar_title | required }}</pre>
+
+<p>You can add validation for a url by specifying a url type:</p>
+<pre>{{ webinar_attendee_url | url }}</pre>
+<p>These urls will have to be a URL in order for you to export the files.</p>
+
+</div><!--ends column-->
+</div><!--ends grid-->

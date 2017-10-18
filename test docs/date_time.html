@@ -1,11 +1,7 @@
-{{webinar_start_time | time | label: "Webinar Start Time"}}
-{{webinar_end_time | time}}
-{{webinar_title | required: false }}
-{{webinar_date | date:"fullDate" }}
-{{ additional_webinar_sessions |
- repeat: `
-{{ webinar_date | label: "Webinar Date" | date: "longDate" | instructions: "This is the date you will use for your webinar." | required }}
-  <a href="{{ webinar_link }}">Register for this session</a>
-{{ webinar_topic | label: "webinar_topic" | instructions: "These are important" | required }}
-{{ webinar_title | label: "Webinar Title" | length: 48 | instructions: "This is where you can include simple instructions." | required }}
- ` }}
+{{webinar_start_time | datetime  }}
+<div>UTC: {{webinar_start_time | datetime: "UTC" }}</div>
+<div>optumTime: {{webinar_start_time | datetime: "optumTime" }}</div>
+<div>optumTime+ZZZ: {{webinar_start_time | datetime: "optumTime+ZZZ" }}</div>
+<div>shortTime: {{webinar_start_time | datetime: "shortTime" }}</div>
+<div>shortTime+ZZZ: {{webinar_start_time | datetime: "shortTime+ZZZ" }}</div>
+<div>fullDate: {{webinar_start_time | datetime: "fullDate" }}</div>

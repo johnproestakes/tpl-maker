@@ -3,211 +3,38 @@ angular.module("templateMaker").controller('MainController', [
   'TemplateFactory',
   '$Export',
   '$Fields',
-  '$UserManagement','$PersistJS',
-function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS){
+  '$UserManagement','$PersistJS','$TemplateMaker',
+function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS, $TemplateMaker){
 
-
+  $scope.appVersion = "1.1.0";
+  $scope.isLoading = false;
+  $scope.Workspace = null;
   $scope.blankSlate = function(){
-    $scope.templateList=[];
-    $scope.fields = [];
-    $scope.exported = [];
+    delete $scope.Workspace;
+    $scope.Workspace = new $TemplateMaker.Workspace($scope);
     $scope.currentView = 1;
-    $scope.livePreview = "";
-    $scope.canLivePreview = false;
-    location.href="#/main";
+    // location.href="#/main";
   };
+  $scope.blankSlate();
 
-  var debounce = null;
+  $scope.SecureGateway = new $UserManagement.SecureGateway(function(){
+    $scope.blankSlate();
+    $scope.Workspace = new $TemplateMaker.Workspace();
+  });
 
-  $scope.logOut = function(){
-    $scope.loginAsOther();
-    $scope.sessionUserEmail = "";
-    $UserManagement.logOut();
-
-    if(location.hasOwnProperty("reload")){
-      location.reload();
-    } else {
-      document.location.href = document.location.href;
-
-    }
-  };
-  $scope.loginAsOther = function(){
-    clearTimeout($scope.loginTimer);
-    delete $scope.loginTimer;
-  };
-
-  if($UserManagement.hasSavedSessionId()){
-    if($UserManagement.isValidEmailAddress($UserManagement.sessionId)) {
-      $scope.sessionUserEmail = $UserManagement.sessionId;
-      $scope.blankSlate();
-      location.href="#/login";
-      $scope.loginTimer = setTimeout(function(){
-          location.href="#/main";
-          $UserManagement.setCurrentUser($scope.sessionUserEmail);
-        }, 1000);
-      //autologin as xx
-    } else {
-      location.href="#/login";
-      $scope.sessionUserEmail = "";
-      }
-    } else {
-      location.href="#/login";
-      $scope.sessionUserEmail = "";
-    }
-
-    window.addEventListener('hashchange', function(){
-      if( $scope.sessionUserEmail == "" || !$UserManagement.hasSavedSessionId()) {
-        location.href="#/login";
-        //$scope.blankSlate();
-        // $scope.sessionToken = 1;
-      }
-    });
-
-
-  // Here are functions for the UI
-
-  $scope.sessionUpdateUserEmail = function(email){
-    $scope.errorMessage = "";
-
-    if($UserManagement.isValidEmailAddress(email)) {
-      $scope.sessionUserEmail = email;
-      $UserManagement.setCurrentUser(email);
-      $scope.blankSlate();
-      location.href = "#/main";
-    } else {
-      // Error message
-      $scope.errorMessage = "Sorry! You have to enter a valid email address.";
-    }
-  };
   $scope.showNavBar = function(){
     if(location.hash == '#/login') return false;
     else return true;
   };
 
-
-
-  $scope.isLoading = false;
   $scope.navigateTo = function(n){
     location.href=n;
   }
-
-  $scope.areAllFieldsCompleted = function(){
-    return $Fields.areAllFieldsCompleted($scope);
-  };
-  $scope.dropTemplateFiles = function(evt){
-    $scope.isLoading = true;
-	  var files = evt.dataTransfer.files; // FileList object.
-	  $scope.templateList=files;
-    var reader = new FileReader();
-	  reader.onloadend = function(evt){
-		  var dropText = evt.target.result;
-      $scope.preview = dropText;
-			$scope.exported=[];
-			$scope.getFieldList();
-
-      setTimeout(function(){
-        $scope.navigateTo('#/fields');
-        $scope.isLoading = false;
-      }, 500);
-
-	  };
-		reader.readAsBinaryString(files[0]);
-	};
-
-  $scope.dropImportFieldValues = function(evt){
-    $scope.isLoading = true;
-	  var files = evt.dataTransfer.files; // FileList object.
-	  $scope.templateList=files;
-    var reader = new FileReader();
-	  reader.onloadend = function(evt){
-		  var droppedFields = JSON.parse(evt.target.result);
-      var outputFields = $Fields.tranformFieldStructure($scope.fields, "ungroup");
-
-      $scope.$apply(function(){
-        for(var i in droppedFields){
-          if(droppedFields.hasOwnProperty(i)){
-            for(n=0;n<outputFields.length;n++){
-              if(outputFields[n].name==i){
-                console.log(droppedFields[i]);
-                if(outputFields[n].type=="repeat"){
-                  outputFields[n].model = droppedFields[i];
-                } else {
-                  outputFields[n].model = droppedFields[i];
-                  outputFields[n].value = droppedFields[i];
-                }
-
-              }
-            }
-          }
-        }
-        $scope.fields = $Fields.tranformFieldStructure(outputFields, "group");
-      });
-      setTimeout(function(){
-        $scope.$apply(function(){
-          $scope.isLoading = false;
-        });
-      }, 300);
-
-	  };
-    window.ga('send', 'event', "IMPORT", "field values", "Import field values");
-		reader.readAsBinaryString(files[0]);
-	};
-
-
-	$scope.exportFields = function(){
-		$Export.exportFields($scope.fields);
-		};
-	$scope.templateLoaded = function(){
-		return $scope.templateList && $scope.templateList.length>0;
-		};
-
-
-  $scope.setLivePreviewTemplate = function(key){
-    $scope.livePreview = key;
-    // console.log($scope.livePreview);
-    $scope.livePreviewName = $scope.templateList[key].name;
-    // console.log($scope.templateList[key].name);
-  };
-	$scope.updateFieldValue = function (field, value){
-		clearTimeout(debounce);
-		debounce = setTimeout(function(){
-
-      $scope.$apply(function(){
-        field.value = field.model;
-  			field.value = field.value.replace(/\"/g, "//Q");
-        $PersistJS.set(field.name, field.value);
-
-      });
-
-			//$scope.generated = TemplateFactory.generateTemplate($scope.preview, $scope.fields);
-			},300);
-		};
-
 
 	$scope.clearText = function(model){
     $scope[model] = ""; $scope.getFieldList();
   };
 
-	$scope.exportDownloadSingleFile = function(file){
-		$Export.exportDownloadSingleTemplate(file, $scope);
-    window.ga('send', 'event', "EXPORT", "download", "Download Single File");
-		};
-  $scope.exportAllTemplates = function(){
-		$Export.exportAll($scope.templateList, $scope);
-    window.ga('send', 'event', "EXPORT", "download", "Download All Files");
-		};
-  $scope.previewHTML=function(file){
-		$Export.exportPreviewBrowserTemplate(file, $scope);
-    window.ga('send', 'event', "EXPORT", "preview", "Preview Single File");
-		};
-
-
-
-  $scope.getFieldList  = function(){
-		TemplateFactory.extractAllFields($scope.templateList, $scope);
-		//$scope.fields = TemplateFactory.updateFields(TemplateFactory.fields);
-			//$scope.generated = TemplateFactory.generateTemplate($scope.preview, $scope.fields);
-			}
 }]);
 
 angular.module("templateMaker").controller('TagBuilderController', [
