@@ -420,7 +420,7 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 					});
 					console.log(this.foundFields);
 				}
-			return origin;
+			// return origin;
 		};
 		Workspace.prototype.__processFoundFields = function(){
 			this.foundFields = this.foundFields.getUnique();
