@@ -158,7 +158,7 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 			this.foundFields = [];
 			this.fieldPattern = /{{((\n|.)*?)}}/gi;
 			this.decayResults = {};
-			this.scope=scope;
+			this.scope = scope;
 			location.href="#/main";
 
 		}
@@ -263,7 +263,7 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 		};
 		Workspace.prototype.dropImportFieldValues = function(evt){
 			var Wksp = this;
-			this.scope.isLoading = true;
+			Wksp.scope.isLoading = true;
 		  var files = evt.dataTransfer.files; // FileList object.
 	    var reader = new FileReader();
 		  reader.onloadend = function(evt){
