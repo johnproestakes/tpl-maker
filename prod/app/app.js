@@ -660,8 +660,9 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 			if(replaceAttr == {}) replaceAttr = {format: "LLL z"};
 
 			var dateTime = field.model.split("|");
-			var dateTimeOutput = dateTime[0]+":00"+($Moment.tz(dateTime[1]).format("Z"));
-
+			console.log(dateTime[0],dateTime[1]);
+			var dateTimeOutput = ($Moment(dateTime[0]).tz(dateTime[1]).toISOString());
+			console.log("DATE TIME" ,dateTimeOutput);
 			var output;
 			var dateMoment = $Moment(dateTimeOutput);
 			switch (replaceAttr.format) {
