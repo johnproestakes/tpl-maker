@@ -220,7 +220,15 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 		};
 
 		Workspace.prototype.areAllFieldsCompleted = function(){
+
 			if(this.allFields===undefined || (this.allFields&&this.allFields.length==0)) return false;
+			for(var group in this.allFields){
+				if(this.allFields.hasOwnProperty(group)){
+					for(var i=0;i<this.allFields[group].length;i++){
+						this.allFields[group][f].value = this.allFields[group][f].model;
+					}
+				}
+			}
 			return true;
 // 			var Wksp = this;
 // var o = $DecayFactory.execute('areAllFieldsCompleted', function(){
