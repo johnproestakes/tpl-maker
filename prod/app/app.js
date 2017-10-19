@@ -225,7 +225,7 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 			for(var group in this.allFields){
 				if(this.allFields.hasOwnProperty(group)){
 					for(var i=0;i<this.allFields[group].length;i++){
-						this.allFields[group][f].value = this.allFields[group][f].model;
+						this.allFields[group][i].value = this.allFields[group][i].model;
 					}
 				}
 			}
