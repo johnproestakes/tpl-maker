@@ -1,14 +1,12 @@
 angular.module("templateMaker").controller('MainController', [
-  "$scope",
-  'TemplateFactory',
-  '$Export',
-  '$Fields',
-  '$UserManagement','$PersistJS','$TemplateMaker',
-function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS, $TemplateMaker){
+  "$scope", '$UserManagement','$PersistJS','$TemplateMaker',
+  function($scope, $UserManagement, $PersistJS, $TemplateMaker){
 
   $scope.appVersion = "1.1.0";
   $scope.isLoading = false;
   $scope.Workspace = null;
+  $scope.project = null;
+  
   $scope.blankSlate = function(){
     delete $scope.Workspace;
     $scope.Workspace = new $TemplateMaker.Workspace($scope);
@@ -19,7 +17,7 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS, $T
 
   $scope.SecureGateway = new $UserManagement.SecureGateway(function(){
     $scope.blankSlate();
-    $scope.Workspace = new $TemplateMaker.Workspace();
+    $scope.Workspace = new $TemplateMaker.Workspace($scope);
   });
 
   $scope.showNavBar = function(){
@@ -31,9 +29,6 @@ function($scope, TemplateFactory, $Export,$Fields,$UserManagement,$PersistJS, $T
     location.href=n;
   }
 
-	$scope.clearText = function(model){
-    $scope[model] = ""; $scope.getFieldList();
-  };
 
 }]);
 

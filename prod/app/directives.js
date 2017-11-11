@@ -164,14 +164,31 @@ angular.module('templateMaker').directive('tplDatetime', ['$timeout','$filter','
           },1000);
         };
         DateTime.prototype.updateDateTimeStr = function(){
-          var DT = this;
-          var tmpDate = new Date(this.year, this.month, this.day, this.hour, this.minute, 0);
+          var DT = this; var firstRun = 0;
+
+
+            var tmpDate = new $Moment();
+            var defaultDate = new Date();
+
+            // .tmpDate.tz(this.timezone);
+            tmpDate.year(this.year);
+            tmpDate.month(this.month);
+            tmpDate.date(this.day);
+            tmpDate.hour(this.hour);
+            tmpDate.minute(this.minute);
+            tmpDate.milliseconds(0);
+            tmpDate.seconds(0);
+
+
+
+
+
           // this.scope.$apply(function(){
             this.nice_date = $filter('date')(new Date(this.year, this.month, this.day), 'longDate');
-            this.nice_fullDate = $filter('date')(new Date(this.year, this.month, this.day, this.hour, this.minute), "EEEE, MMMM d, y '—' h:mm a") + " " + this.timezone;
+            this.nice_fullDate = $Moment(tmpDate).format("dddd, MMMM D, YYYY, h:mm a") + " " + this.timezone;
 
 
-            DT.scope.ngModel = $Moment(tmpDate).toISOString() +"|"+ this.timezone;
+            DT.scope.ngModel = tmpDate.toISOString()+ "|"+ this.timezone;
             if(DT.scope.ngModel!=="") {
               DT.scope.ngChange();
             }

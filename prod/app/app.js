@@ -668,9 +668,10 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 			if(replaceAttr == {}) replaceAttr = {format: "LLL z"};
 
 			var dateTime = field.model.split("|");
+			dateTime[0] = dateTime[0].replace(".000", "");
 			console.log(dateTime[0],dateTime[1]);
-			var dateTimeOutput = ($Moment(dateTime[0]).tz(dateTime[1]).toISOString());
-			console.log("DATE TIME" ,dateTimeOutput);
+			var dateTimeOutput = ($Moment(dateTime[0]).tz(dateTime[1]));
+			console.log("DATE TIME" ,dateTimeOutput.toString());
 			var output;
 			var dateMoment = $Moment(dateTimeOutput);
 			switch (replaceAttr.format) {
@@ -946,83 +947,6 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
   return this;
 	}]);
 
-angular.module("templateMaker")
-.factory('TemplateFactory',["saveAs","$Fields","$filter", function(saveAs, $Fields,$filter){
-	var TemplateFactory = this;
-
-  this.binaryFiles = [];
-	this.fields = [];
-
-	this.readFile = function(files, i, $scope){
-		var reader = new FileReader();
-			reader.onloadend = function(evt){
-				var binary = $Fields.prepareHtml(evt.target.result);
-				TemplateFactory.binaryFiles.push(binary);
-        TemplateFactory.fields = $Fields.extractFields(binary, TemplateFactory.fields);
-				if(i < files.length-1){
-					TemplateFactory.readFile(files,i+1, $scope);
-					} else {
-						$scope.$apply(function(){
-						$scope.fields = $Fields.processFields(TemplateFactory.fields);
-						});
-						}
-			};
-			reader.readAsBinaryString(files[i]);
-		};
-
-  this.extractAllFields = function(files,$scope){
-		var a = [];
-		TemplateFactory.fields =[];
-		TemplateFactory.binaryFiles =[];
-		return TemplateFactory.readFile(files, 0, $scope);
-		};
-
-	this.generateTemplate = function(preview, fields){
-		var output = $Fields.prepareHtml(preview);
-		//ungroup the fields;
-		fields = $Fields.tranformFieldStructure(fields, $Fields.FieldStructure.UNGROUP);
-		//newFields = [];
-		console.log(fields);
-
-			for(var f in fields){
-				if(fields.hasOwnProperty(f)){
-					if(fields[f].data_replace.length>0){
-						for(var i=0; i < fields[f]['data_replace'].length; i++){
-							//escape characters
-							var copy = fields[f].data_replace[i][0].replace(/[\-\[\]\/\{\}\(\)\*\+\?\.\\\^\$\|]/g, "\\$&");
-
-							var str = new RegExp(copy, "g");
-
-
-							if($Fields.typeExists(fields[f].type)){
-								//extensible handler
-								var replaceStr = $Fields.fieldTypes[fields[f].type].renderField(fields[f], fields[f].data_replace[i][1]);
-								// returns value to be replaced
-
-								console.log("replacing ", str, "with", replaceStr);
-								output = output.replace(str, replaceStr);
-
-							} else {
-								//default handler
-								output = output.replace(str, fields[f].value);
-							}
-
-
-
-						}
-					}
-				}
-			}
-			//do stuff to output for tpl-ifs
-
-
-			return output;
-		};
-
-
-  return TemplateFactory;
-	}]);
-
 angular.module('templateMaker').factory(
   "$UserManagement",
   ['$CryptoJS','$PersistJS',function $UserManagement($CryptoJS, $PersistJS){
@@ -1134,7 +1058,7 @@ angular.module('templateMaker').factory(
   }]);
 
 angular.module('templateMaker').factory('$Export', [
-  'TemplateFactory','saveAs','$Fields', function(TemplateFactory,saveAs,$Fields){
+  'saveAs','$Fields', function(saveAs,$Fields){
   var self = this;
 
 
