@@ -188,7 +188,7 @@ angular.module('templateMaker').directive('tplDatetime', ['$timeout','$filter','
             this.nice_fullDate = $Moment(tmpDate).format("dddd, MMMM D, YYYY, h:mm a") + " " + this.timezone;
 
 
-            DT.scope.ngModel = tmpDate.toISOString()+ "|"+ this.timezone;
+            DT.scope.ngModel = tmpDate.format('YYYYMMDD\THHmmss')+ "|"+ this.timezone;
             if(DT.scope.ngModel!=="") {
               DT.scope.ngChange();
             }

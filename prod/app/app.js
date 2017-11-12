@@ -668,15 +668,19 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 			if(replaceAttr == {}) replaceAttr = {format: "LLL z"};
 
 			var dateTime = field.model.split("|");
-			dateTime[0] = dateTime[0].replace(".000", "");
-			console.log(dateTime[0],dateTime[1]);
-			var dateTimeOutput = ($Moment(dateTime[0]).tz(dateTime[1]));
-			console.log("DATE TIME" ,dateTimeOutput.toString());
+			// console.log(dateTime[0]);
+			// dateTime[0] = dateTime[0].replace(/\.[0-9]{3}\Z/gi, "Z");
+			// console.log(dateTime[0],dateTime[1]);
+			var dateTimeOutput = ($Moment(dateTime[0]));
+			// console.log("DATE TIME" ,dateTimeOutput.toString());
 			var output;
 			var dateMoment = $Moment(dateTimeOutput);
 			switch (replaceAttr.format) {
 				case "UTC":
-					output = dateMoment.utc().format('YYYYMMDD\THHmmss')+"Z";
+				// .tz(dateTime[1]).
+				var getTimezone = $Moment().tz(dateTime[1]).utcOffset();
+				console.log('timezone offset',getTimezone);
+					output = dateMoment.add(getTimezone*-1, 'minutes').format('YYYYMMDD\THHmmss')+"Z";
 					break;
 				case "fullDate":
 					output = dateMoment.format('dddd, MMMM D, YYYY');

@@ -1,2 +1,6 @@
 <p>http://www.google.com/calendar/event?action=TEMPLATE&text={{webinar_topic | text: uriencode }}&dates={{webinar_start_time|datetime:UTC}}%2F{{webinar_end_time|datetime:UTC}}&details={{audience_url | text: uriencode}}&sprop=website%3Awww.optum.com&location=ON24%20Webcast</p>
+
+<p>{{webinar_start_time | datetime: "shortTime"}}<br>
+{{webinar_end_time| datetime: "shortTime"}}</p>
+
 <p>http://calendar.yahoo.com/?v=60&title={{webinar_topic | text: uriencode}}&in_loc=ON24+Webcast&notes={{audience_url|text:uriencode}}&url={{audience_url | text: uriencode}}&st={{webinar_start_time|datetime:UTC}}&et={{webinar_end_time|datetime:UTC}}</p>
