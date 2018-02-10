@@ -3,34 +3,54 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title>Template Maker</title>
 
-<link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
-<link rel="icon" href="assets/favicon.ico" type="image/x-icon">
-<link rel="icon" type="image/png" href="assets/logo.png" />
 
 
-<!-- css -->
-<link href="scripts/css/styles.css" rel="stylesheet" type="text/css"/>
-<link href="scripts/css/main.css" rel="stylesheet" type="text/css"/>
-<link href="scripts/css/libs/semantic.min.css" rel="stylesheet" type="text/css"/>
 
-<!-- libraries -->
+  <link rel="shortcut icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="icon" href="assets/favicon.ico" type="image/x-icon">
+  <link rel="icon" type="image/png" href="assets/logo.png" />
+
+
+<script type="text/javascript">
+  /* -------------------------
+       ALWAYS BE UPDATING.
+    -------------------------- */
+    window.CURRENT_VERSION= "1.0.0.0";
+    window.PAGE_TITLE = document.title;
+
+    (function(){
+      window.LOCALHOST = location.href.indexOf('johnproestakes.github.io')==-1;
+      var params = new URLSearchParams(window.location.search);
+      if(params.has('offline_version')) {
+        window.OFFLINE_VERSION = params.get('offline_version');
+      }
+     if(window.LOCALHOST){
+       (function(i,s,o,g,r,a,m){ i.redirectJsonpCallback = function(result){ if(result == true) { s.href=o;}else{console.log('not github');}}; r = g.createElement('script'),a= g.getElementsByTagName('script')[0]; r.type="text/javascript"; i.LOCALHOST && console.warn("simulating server blockage"); r.src=s.href.indexOf("localhost")>-1?"canredirect.js":"http://johnproestakes.github.io/tpl-maker/prod/app/canredirect.js";a.parentNode.insertBefore(r,m);})(window,location,"http://johnproestakes.github.io/tpl-maker?offline_version="+window.CURRENT_VERSION,document);
+       document.title = window.PAGE_TITLE + " (Offline Mode)";
+    } else {
+       document.title = window.PAGE_TITLE;
+    } })();
+
+</script>
+
+
+<link href="scripts/css/libs/semantic.min.css" type="text/css" rel="stylesheet"/>
+<link href="scripts/css/styles.css" type="text/css" rel="stylesheet"/>
+<link href="scripts/css/main.css" type="text/css" rel="stylesheet"/>
 <script src="scripts/js/libs/md5.js" type="text/javascript"></script>
 <script src="scripts/js/libs/persistjs-min.js" type="text/javascript"></script>
-
-<script type="text/javascript" src="scripts/js/custom.js"></script>
-<script type="text/javascript" src="scripts/js/libs/jquery.min.js"></script>
-<script type="text/javascript" src="scripts/js/libs/angular.min.js"></script>
-<script type="text/javascript" src="scripts/js/libs/angular-route.min.js"></script>
-<script type="text/javascript" src="scripts/js/libs/moment.min.js"></script>
-<script type="text/javascript" src="scripts/js/libs/moment-timezone-with-data-2012-2022.min.js"></script>
-<script type="text/javascript" src="scripts/js/jupiter-drag-drop.js"></script>
-<script type="text/javascript" src="scripts/js/libs/semantic.min.js"></script>
-
-<script type="text/javascript" src="prod/app/app.js"></script>
-<script type="text/javascript" src="prod/app/controllers.js"></script>
-<script type="text/javascript" src="prod/app/directives.js"></script>
-<script type="text/javascript" src="prod/app/routes.js"></script>
-
+<script src="scripts/js/custom.js" type="text/javascript"></script>
+<script src="scripts/js/libs/jquery.min.js" type="text/javascript"></script>
+<script src="scripts/js/libs/angular.min.js" type="text/javascript"></script>
+<script src="scripts/js/libs/angular-route.min.js" type="text/javascript"></script>
+<script src="scripts/js/jupiter-drag-drop.js" type="text/javascript"></script>
+<script src="scripts/js/libs/moment.min.js" type="text/javascript"></script>
+<script src="scripts/js/libs/moment-timezone-with-data-2012-2022.min.js" type="text/javascript"></script>
+<script src="scripts/js/libs/semantic.min.js" type="text/javascript"></script>
+<script src="prod/app/app.js" type="text/javascript"></script>
+<script src="prod/app/controllers.js" type="text/javascript"></script>
+<script src="prod/app/directives.js" type="text/javascript"></script>
+<script src="prod/app/routes.js" type="text/javascript"></script>
 
 </head>
 
@@ -38,7 +58,13 @@
   <div ng-app="templateMaker" ng-controller="MainController" id="app_body">
     <div class="ui fixed inverted top menu" ng-if="showNavBar()">
       <div class="ui container">
-        <div class="item"><img src="assets/logo.png" ng-hide="isLoading"/><div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
+        <div class="item">
+          
+          <img src="assets/logo.png" ng-hide="isLoading"/>
+          
+          
+
+          <div style="width:10px; display:inline-block;" ng-show="isLoading"></div><div class="ui inline small loader" ng-class="{visible:isLoading}"></div></div>
         <a href="javascript:angular.noop()" ng-click="blankSlate()" class="item">New Workspace</a>
         <div class="right menu">
           <div class="narrow-view ui pointing dropdown item" ui-dropdown>
@@ -92,47 +118,73 @@
     </div>
 </body>
 
-<script>
-  if(!window.HashChangeEvent)(function(){
-  var lastURL=document.URL;
-  window.addEventListener("hashchange",function(event){
-    Object.defineProperty(event,"oldURL",{enumerable:true,configurable:true,value:lastURL});
-    Object.defineProperty(event,"newURL",{enumerable:true,configurable:true,value:document.URL});
-    lastURL=document.URL;
-  });
-  }());
-
-  function locationHashChanged() {
-    window.ga('send', 'pageview', {
-   'page': location.pathname + location.search  + location.hash
-  });
-  }
-
-  if ("onhashchange" in window) {
-      //alert("The browser supports the hashchange event!");
-      window.onhashchange = locationHashChanged;
-  }
 
 
 
-  if(location.href.indexOf("localhost")>-1){
-    window.ga = function(args){
-      var output = [];
-      for (var i = 0; i < arguments.length; i++) {
-        output.push(arguments[i]);
+
+<script type="text/javascript">
+/* ANALYTICS */
+    var ProestakesGA = (function(){
+      function ProestakesGA(gaKey){
+        this.gaKey = gaKey;
+        if (!window.HashChangeEvent)this.__polyfillHashchange();
+        if ("onhashchange" in window) { window.onhashchange = this.locationHashChanged; }
+        if(window.LOCALHOST) {
+          this.loadDebugMode();
+        } else {
+          this.loadProductionMode();
+        }
       }
-      console.log("%c GOOGLE ANALYTICS [DEBUG]: "+ output.join(", "), "background-color:lime");
-    };
-  } else {
-    (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
-    (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
-    m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
-    })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
-  }
+      ProestakesGA.prototype.__polyfillHashchange = function(){
+        (function(){
+        	var lastURL=document.URL;
+        	window.addEventListener("hashchange",function(event){
+        		Object.defineProperty(event,"oldURL",{enumerable:true,configurable:true,value:lastURL});
+        		Object.defineProperty(event,"newURL",{enumerable:true,configurable:true,value:document.URL});
+        		lastURL=document.URL;
+        	});
+        }());
+      };
+      ProestakesGA.prototype.loadDebugMode = function(){
+        window.ga = function(args){
+          var output = [];
+          for (var i = 0; i < arguments.length; i++) {
 
+            if(typeof arguments[i] === "object"){
+              var joiner = [];
+              for(var a in arguments[i]){
+                if(arguments[i].hasOwnProperty(a)){
+                  joiner.push(a + ":" + arguments[i][a]);
+                }
+              }
+              arguments[i] = joiner.join(",");
+            }
 
-  ga('create', 'UA-99875123-2', 'auto');
-  ga('send', 'pageview');
+            output.push(arguments[i]);
+          }
+          console.log("%c GOOGLE ANALYTICS [DEBUG]: "+ output.join(", "), "background-color:"+(arguments[1]=="event" ? "yellow" : "lime"));
 
-</script>
+        };
+
+        this.onAfterConstruct();
+      };
+      ProestakesGA.prototype.loadProductionMode = function(){
+        var PGA = this;
+        (function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+        (i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+        m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;a.onload=function(){console.log("LOADED");PGA.onAfterConstruct();};m.parentNode.insertBefore(a,m);
+        })(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+      };
+      ProestakesGA.prototype.locationHashChanged = function(){
+        ga('send', 'pageview', { 'page': location.pathname + location.search  + location.hash });
+      };
+      ProestakesGA.prototype.onAfterConstruct = function(){
+        ga('create', this.gaKey, 'auto');
+        ga('send', 'pageview');
+      };
+      return ProestakesGA;
+    })();
+
+    var PGA = new ProestakesGA('UA-99875123-2');
+  </script>
 </html>

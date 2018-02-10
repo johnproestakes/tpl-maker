@@ -83,11 +83,10 @@ angular.module("templateMaker").directive('uiPopup', ["$timeout", function($time
   };
 }]);
 
-angular.module('templateMaker').factory(
-  "$CryptoJS",
-  function $CryptoJS(){
-    return window.CryptoJS;
-  });
+angular.module('templateMaker').factory("$CryptoJS",
+function $CryptoJS(){
+  return window.CryptoJS;
+});
 
 angular.module('templateMaker').factory('$DecayFactory', function(){
   var self = this;
@@ -115,11 +114,9 @@ angular.module('templateMaker').factory('$DecayFactory', function(){
   return this;
 });
 
-angular.module('templateMaker').factory(
-  "$Moment", function $Moment(){
+angular.module('templateMaker').factory("$Moment", function $Moment(){
   return window.moment;
-  }
-);
+});
 
 angular.module('templateMaker').factory(
   "$PersistJS",
@@ -230,38 +227,11 @@ function $TemplateMaker($DecayFactory,saveAs, $Fields,$filter,$Moment,$PersistJS
 				}
 			}
 			return true;
-// 			var Wksp = this;
-// var o = $DecayFactory.execute('areAllFieldsCompleted', function(){
-// 	var temp_fields = Wksp.transformFieldStructure(self.FieldStructure.UNGROUP);
-// 	var output = true;
-// 	for(var i in temp_fields){
-// 		if(temp_fields.hasOwnProperty(i)){
-// 			console.log('%cfields completed?','background-color:blue',temp_fields[i].name, temp_fields[i].model, temp_fields[i].isFieldComplete());
-// 			if(!temp_fields[i].isFieldComplete()) output = false;
-// 		}
-//
-// 	}
-// 	return output;
-// }, function(){
-// 	Wksp.scope.$apply();
-// });
-			return o;
 
 
 
-			// if(Wksp.decayResults === undefined) Wksp.decayResults = {};
-			// if(Wksp.decayResults.fieldsCompleted !== undefined) return Wksp.decayResults.fieldsCompleted;
-			//
-			//
-			//
-			// Wksp.decayResults.fieldsCompleted = output;
-			//
-			// setTimeout(function(){
-			// 	if(Wksp.decayResults.fieldsCompleted){
-			// 		delete Wksp.decayResults.fieldsCompleted;
-			// 	}
-			// },500);
-			// return output;
+
+
 		};
 		Workspace.prototype.isTemplateLoaded = function(){
 			return this.templateList && this.templateList.length>0;

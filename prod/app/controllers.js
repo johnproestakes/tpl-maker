@@ -6,7 +6,36 @@ angular.module("templateMaker").controller('MainController', [
   $scope.isLoading = false;
   $scope.Workspace = null;
   $scope.project = null;
-  
+
+
+  $scope.update_version = false;
+  $scope.update_forced = false;
+  $scope.offlineVersion = window.OFFLINE_VERSION;
+  $scope.onlineVersion = window.CURRENT_VERSION;
+  $scope.accessingFromOffline = false;
+
+
+  var forceUpdate = function(offline, online){
+    var offlineVersion = offline.split("."),
+    onlineVersion = online.split("."),
+    match = 0, output = false;
+    for(var i=0; i<onlineVersion.length;i++){
+      if(onlineVersion[i]== offlineVersion[i]) match++;
+    }
+    if(match<3){
+      output = true;
+    }
+    return output;
+  };
+
+  if(window.OFFLINE_VERSION&&!window.LOCALHOST){
+    $scope.accessingFromOffline = true;
+  }
+  if(window.OFFLINE_VERSION &&(window.OFFLINE_VERSION !== window.CURRENT_VERSION)){
+    $scope.update_version = true;
+    $scope.update_forced = forceUpdate(window.OFFLINE_VERSION, window.CURRENT_VERSION);
+  }
+
   $scope.blankSlate = function(){
     delete $scope.Workspace;
     $scope.Workspace = new $TemplateMaker.Workspace($scope);

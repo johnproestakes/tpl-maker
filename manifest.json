@@ -1,0 +1,23 @@
+{
+  "scripts":[
+    "scripts/js/libs/md5.js",
+    "scripts/js/libs/persistjs-min.js",
+    "scripts/js/custom.js",
+    "scripts/js/libs/jquery.min.js",
+    "scripts/js/libs/angular.min.js",
+    "scripts/js/libs/angular-route.min.js",
+    "scripts/js/jupiter-drag-drop.js",
+    "scripts/js/libs/moment.min.js",
+    "scripts/js/libs/moment-timezone-with-data-2012-2022.min.js",
+    "scripts/js/libs/semantic.min.js",
+    "prod/app/app.js",
+    "prod/app/controllers.js",
+    "prod/app/directives.js",
+    "prod/app/routes.js"
+  ],
+  "css":[
+    "scripts/css/libs/semantic.min.css",
+    "scripts/css/styles.css",
+    "scripts/css/main.css"
+  ]
+}
